@@ -1,1027 +1,1583 @@
 import { useState, useCallback, useMemo } from "react";
 import {
-  Shield, FileCheck, AlertTriangle, CheckCircle2, XCircle, Clock, Eye,
-  ChevronRight, ChevronDown, Bell, Search, Menu, Plus, Filter,
-  Building2, Users, FileText, BarChart3, FolderOpen, Camera,
-  MessageSquare, Video, Brain, Layers, Activity, Target, Briefcase,
-  MapPin, TrendingUp, TrendingDown, X, Send, Upload, Download,
-  Calendar, Zap, AlertOctagon, ClipboardCheck, GitBranch, Archive,
-  ExternalLink, Paperclip, Flag, ThumbsUp, ThumbsDown, RotateCcw,
-  Maximize2, Minimize2, ChevronLeft, MoreVertical, Star,
-  CircleDot, Hash, BookOpen, Gauge, ScanEye, Hammer, CircleAlert
+  Building2, Users, FileText, BarChart3, Package, ShoppingCart,
+  DollarSign, Calendar, MessageSquare, FolderOpen, CloudSun, Camera,
+  ChevronRight, ChevronDown, Bell, Search, Menu, X, Plus, Filter,
+  CheckCircle2, Clock, AlertTriangle, XCircle, ArrowRight, ArrowLeft,
+  Home, Settings, LogOut, Eye, Edit, Trash2, Download, Upload,
+  MapPin, Phone, Mail, Globe, Star, TrendingUp, TrendingDown,
+  Layers, Hammer, Truck, Wrench, Palette, Zap, Droplets,
+  ClipboardList, FileCheck, Send, Lock, Unlock, RefreshCw,
+  LayoutDashboard, PieChart, Activity, Target, Award, Briefcase,
+  HardHat, Ruler, Calculator, Boxes, Receipt, CreditCard,
+  Video, Shield, Brain, ChevronUp, MoreHorizontal, ExternalLink,
+  UserCheck, UserX, GraduationCap, Gauge, BookOpen, AlertCircle,
+  BarChart2, Percent, CircleDot, ArrowUpRight, ArrowDownRight,
+  Hash, Bookmark, Sliders, Database, History, FileWarning,
+  ShieldCheck, ShieldAlert, GitBranch, Workflow, ListChecks
 } from "lucide-react";
 
-/* ─── COULEURS KOMA ─── */
+// ═══════════════════════════════════════════════════════════════
+// DESIGN SYSTEM — KOMA Expertise Admin Portal
+// ═══════════════════════════════════════════════════════════════
+
 const C = {
-  pri: "#18B7D2", priL: "#E0F5F9", priD: "#0E95AD",
-  sec: "#6BC0AA", secL: "#E8F5F0", secD: "#4FA08B",
-  dk: "#1D1D1B", dkG: "#374151", g: "#6B7280", lG: "#9CA3AF",
-  brd: "#E5E7EB", bgL: "#F9FAFB", bg2: "#F3F4F6", w: "#FFFFFF",
-  ok: "#10B981", okL: "#D1FAE5", okD: "#065F46",
-  warn: "#F59E0B", warnL: "#FEF3C7", warnD: "#92400E",
-  err: "#EF4444", errL: "#FEE2E2", errD: "#991B1B",
-  info: "#3B82F6", infoL: "#DBEAFE", infoD: "#1E40AF",
-  purp: "#8B5CF6", purpL: "#EDE9FE", purpD: "#5B21B6",
-  rose: "#E11D48",
+  primary: "#18B7D2",
+  primaryDark: "#0E95AD",
+  primaryDeep: "#0A7B94",
+  primaryLight: "#E0F5F9",
+  primaryGhost: "#F0FAFB",
+  secondary: "#6BC0AA",
+  secondaryDark: "#4FA08B",
+  secondaryLight: "#E8F5F0",
+  dark: "#1D1D1B",
+  dark2: "#2A2A28",
+  darkGray: "#374151",
+  gray: "#6B7280",
+  lightGray: "#9CA3AF",
+  faintGray: "#D1D5DB",
+  border: "#E5E7EB",
+  borderLight: "#F3F4F6",
+  bg: "#F7F8FA",
+  bgCard: "#FFFFFF",
+  success: "#10B981",
+  successLight: "#D1FAE5",
+  successDark: "#065F46",
+  warning: "#F59E0B",
+  warningLight: "#FEF3C7",
+  warningDark: "#92400E",
+  danger: "#EF4444",
+  dangerLight: "#FEE2E2",
+  dangerDark: "#991B1B",
+  info: "#3B82F6",
+  infoLight: "#DBEAFE",
+  infoDark: "#1E40AF",
+  purple: "#8B5CF6",
+  purpleLight: "#EDE9FE",
+  purpleDark: "#5B21B6",
 };
 
-/* ─── DONNÉES MOCKÉES PROJETS ─── */
-const PROJECTS = [
-  { id:"PRJ-001", nom:"Villa Éden", loc:"Douala, Bonanjo", client:"J-P Fouda", typo:"neuf", phase:"Construction", phaseIdx:7, statut:"Actif", budget:120e6, dep:52.8e6, av:44, avPlan:48, risque:"Modéré", conformite:82, reservesOuv:3, ecartsOuv:2, validAttente:4, sensClient:"Moyenne", dernCtrl:"16/04/2026", prochJalon:"Fin GO R+1 — 28/04", spoc:"M. Atangana", moe:"Arc. Njoya", moex:"BTP Cameroun", tempCtrl:"stable" },
-  { id:"PRJ-002", nom:"Résidence Kotto", loc:"Douala, Kotto", client:"M. Ndiaye", typo:"neuf", phase:"Conception", phaseIdx:4, statut:"En validation", budget:85e6, dep:2.1e6, av:8, avPlan:10, risque:"Faible", conformite:95, reservesOuv:0, ecartsOuv:0, validAttente:2, sensClient:"Faible", dernCtrl:"14/04/2026", prochJalon:"Validation APS — 22/04", spoc:"M. Atangana", moe:"—", moex:"—", tempCtrl:"favorable" },
-  { id:"PRJ-004", nom:"Reprise Bali", loc:"Douala, Bali", client:"P. Essomba", typo:"reprise", phase:"Devis", phaseIdx:3, statut:"Actif", budget:45e6, dep:12e6, av:28, avPlan:35, risque:"Élevé", conformite:58, reservesOuv:5, ecartsOuv:4, validAttente:6, sensClient:"Haute", dernCtrl:"15/04/2026", prochJalon:"Devis finalisé — 20/04", spoc:"M. Atangana", moe:"—", moex:"Bati-Plus", tempCtrl:"dégradé" },
-  { id:"PRJ-006", nom:"Étude Kribi", loc:"Kribi", client:"J-P Fouda", typo:"etudes", phase:"Pré-faisabilité", phaseIdx:1, statut:"Actif", budget:2.5e6, dep:0.8e6, av:60, avPlan:55, risque:"Faible", conformite:90, reservesOuv:1, ecartsOuv:0, validAttente:1, sensClient:"Faible", dernCtrl:"10/04/2026", prochJalon:"Livraison rapport — 25/04", spoc:"M. Atangana", moe:"—", moex:"—", tempCtrl:"favorable" },
+const ROLE_STYLES = {
+  Admin: { bg: "#F3F4F6", color: "#1F2937", icon: Shield },
+  SPOC: { bg: C.primaryLight, color: C.primaryDark, icon: Users },
+  AMOA: { bg: C.secondaryLight, color: C.secondaryDark, icon: Briefcase },
+  MOE: { bg: C.purpleLight, color: C.purpleDark, icon: Ruler },
+  MOEX: { bg: C.warningLight, color: C.warningDark, icon: HardHat },
+  Client: { bg: C.infoLight, color: C.infoDark, icon: Home },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// MOCK DATA — Rich & Credible
+// ═══════════════════════════════════════════════════════════════
+
+const ADMIN_USERS = [
+  { id: 1, nom: "Marie Atangana", email: "m.atangana@koma.cm", role: "SPOC", rolesSecondaires: [], statut: "Actif", statutOnboarding: "Opérationnel", maturite: "Confirmé", scoreAdoption: 94, projets: 3, derniereConnexion: "18/04/2026 09:12", actionsRecentes: 28, incidents: 0, habilitations: ["CRM", "Devis", "Validation projet", "Facturation"], modulesArenforcer: [], qualitePortefeuille: "Excellente" },
+  { id: 2, nom: "Fabien Nkoulou", email: "f.nkoulou@koma.cm", role: "SPOC", rolesSecondaires: [], statut: "Actif", statutOnboarding: "Qualifié", maturite: "Autonome", scoreAdoption: 78, projets: 1, derniereConnexion: "17/04/2026 16:40", actionsRecentes: 14, incidents: 1, habilitations: ["CRM", "Devis"], modulesArenforcer: ["Facturation", "GED"], qualitePortefeuille: "Bonne" },
+  { id: 3, nom: "Samuel Kamga", email: "s.kamga@wecare.cm", role: "AMOA", rolesSecondaires: ["Acheteur"], statut: "Actif", statutOnboarding: "Opérationnel", maturite: "Référent", scoreAdoption: 97, projets: 2, derniereConnexion: "18/04/2026 08:45", actionsRecentes: 35, incidents: 0, habilitations: ["Validation", "Rapports", "Achats", "Stock", "Devis", "GED"], modulesArenforcer: [], qualitePortefeuille: "Excellente" },
+  { id: 4, nom: "Boris Ekambi", email: "b.ekambi@btp-cameroun.cm", role: "MOEX", rolesSecondaires: [], statut: "Actif", statutOnboarding: "Qualifié", maturite: "Autonome", scoreAdoption: 82, projets: 1, derniereConnexion: "18/04/2026 07:30", actionsRecentes: 22, incidents: 2, habilitations: ["Rapports terrain", "Stock", "Tâches"], modulesArenforcer: ["Achats"], qualitePortefeuille: "Bonne" },
+  { id: 5, nom: "Arc. Henri Njoya", email: "njoya@archi-studio.cm", role: "MOE", rolesSecondaires: [], statut: "Actif", statutOnboarding: "En onboarding", maturite: "Assisté", scoreAdoption: 45, projets: 1, derniereConnexion: "15/04/2026 11:20", actionsRecentes: 5, incidents: 0, habilitations: ["Plans", "Études"], modulesArenforcer: ["GED", "Tâches", "Planning"], qualitePortefeuille: "À évaluer" },
+  { id: 6, nom: "Jean-Pierre Fouda", email: "jp.fouda@yahoo.fr", role: "Client", rolesSecondaires: [], statut: "Actif", statutOnboarding: "Opérationnel", maturite: "Autonome", scoreAdoption: 88, projets: 1, derniereConnexion: "18/04/2026 20:05", actionsRecentes: 8, incidents: 0, habilitations: ["Consultation", "Paiement", "Messages"], modulesArenforcer: [], qualitePortefeuille: "—" },
+  { id: 7, nom: "Moussa Ndiaye", email: "m.ndiaye@gmail.com", role: "Client", rolesSecondaires: [], statut: "Actif", statutOnboarding: "En onboarding", maturite: "Découverte", scoreAdoption: 32, projets: 1, derniereConnexion: "14/04/2026 16:40", actionsRecentes: 3, incidents: 0, habilitations: ["Consultation"], modulesArenforcer: ["Paiement", "GED", "Messages"], qualitePortefeuille: "—" },
+  { id: 8, nom: "Amina Tchouangou", email: "a.tchouangou@outlook.com", role: "Client", rolesSecondaires: [], statut: "Actif", statutOnboarding: "Invité", maturite: "Découverte", scoreAdoption: 10, projets: 0, derniereConnexion: "—", actionsRecentes: 0, incidents: 0, habilitations: [], modulesArenforcer: ["Tout"], qualitePortefeuille: "—" },
+  { id: 9, nom: "Ex. Ateba", email: "ateba@ex-moe.cm", role: "MOE", rolesSecondaires: [], statut: "Inactif", statutOnboarding: "Suspendu", maturite: "—", scoreAdoption: 0, projets: 0, derniereConnexion: "02/01/2026", actionsRecentes: 0, incidents: 3, habilitations: [], modulesArenforcer: [], qualitePortefeuille: "—" },
+  { id: 10, nom: "Pauline Essomba", email: "p.essomba@koma.cm", role: "AMOA", rolesSecondaires: [], statut: "Actif", statutOnboarding: "En onboarding", maturite: "Assisté", scoreAdoption: 55, projets: 1, derniereConnexion: "17/04/2026 14:30", actionsRecentes: 9, incidents: 1, habilitations: ["Rapports", "Validation"], modulesArenforcer: ["Achats", "Stock", "Devis"], qualitePortefeuille: "En progression" },
 ];
 
-/* ─── VALIDATIONS ─── */
-const VALIDATIONS = [
-  { id:"VAL-001", projet:"PRJ-001", objet:"Rapport journalier RJ-16", type:"Rapport", auteur:"B. Ekambi (MOEX)", date:"16/04", risque:"Moyen", synthese:"Coffrage poteaux R+1 – 8 ouvriers – 75% avancement déclaré. Vérifier cohérence avec vidéo.", delai:"17/04", statut:"En attente", pj:true, crit:false },
-  { id:"VAL-002", projet:"PRJ-004", objet:"Devis reprise v2", type:"Devis", auteur:"M. Atangana (SPOC)", date:"14/04", risque:"Élevé", synthese:"Écart +18% vs estimation initiale. Poste ferraillage à requalifier. Impact budget client.", delai:"18/04", statut:"En attente", pj:true, crit:true },
-  { id:"VAL-003", projet:"PRJ-001", objet:"Plan RDC v2 — APD", type:"Livrable", auteur:"Arc. Njoya (MOE)", date:"10/04", risque:"Moyen", synthese:"Plan modifié suite réserve AMOA #R-003. Vérifier cotations et conformité normes WeCare.", delai:"20/04", statut:"En attente", pj:true, crit:false },
-  { id:"VAL-004", projet:"PRJ-002", objet:"APS — Plans distribution", type:"Étude", auteur:"Arc. Njoya (MOE)", date:"12/04", risque:"Faible", synthese:"Premier lot APS. Vérifier complétude vs référentiel WeCare.", delai:"22/04", statut:"En attente", pj:false, crit:false },
-  { id:"VAL-005", projet:"PRJ-004", objet:"Rapport visite AMOA 15/04", type:"Rapport", auteur:"S. Kamga (AMOA)", date:"15/04", risque:"Élevé", synthese:"5 non-conformités identifiées. Ferraillage LOT II non conforme aux plans PRO.", delai:"16/04", statut:"En attente", pj:true, crit:true },
-  { id:"VAL-006", projet:"PRJ-001", objet:"Commande ciment CPJ — DA-005", type:"Achat", auteur:"BTP Cameroun (MOEX)", date:"15/04", risque:"Moyen", synthese:"200 sacs × 5 200 FCFA. Vérifier prix vs devis référence. Stock actuel : 245.", delai:"17/04", statut:"En attente", pj:false, crit:false },
-  { id:"VAL-007", projet:"PRJ-006", objet:"Rapport faisabilité terrain", type:"Étude", auteur:"S. Kamga (AMOA)", date:"08/04", risque:"Faible", synthese:"Terrain exploitable. Sol porteur. Accès routier OK. Recommandation : G2 AVP.", delai:"12/04", statut:"Validée", pj:true, crit:false },
-  { id:"VAL-008", projet:"PRJ-001", objet:"Facture main-d'œuvre Mars", type:"Facture", auteur:"SPOC", date:"01/04", risque:"Faible", synthese:"3.2M FCFA conforme au planning. Aucun écart.", delai:"05/04", statut:"Rejetée", pj:false, crit:false },
+const ADMIN_PROSPECTS = [
+  { id: "P-2026-001", nom: "Moussa Ndiaye", type: "Construction neuve", bien: "Villa", region: "Douala", budget: "85M FCFA", statut: "En revue", score: 87, spoc: "Marie Atangana", source: "Site web", derniereAction: "Appel de qualification", delaiSansContact: 2, qualiteRemplissage: 92, financement: "Oui", date: "10/04/2026" },
+  { id: "P-2026-002", nom: "Amina Tchouangou", type: "Rénovation", bien: "Appartement", region: "Yaoundé", budget: "25M FCFA", statut: "En attente", score: 62, spoc: "Fabien Nkoulou", source: "Recommandation", derniereAction: "Email de bienvenue", delaiSansContact: 4, qualiteRemplissage: 68, financement: "Non", date: "14/04/2026" },
+  { id: "P-2026-003", nom: "Jean-Pierre Fouda", type: "Construction neuve", bien: "Duplex", region: "Kribi", budget: "120M FCFA", statut: "Converti", score: 94, spoc: "Marie Atangana", source: "Événement diaspora", derniereAction: "Conversion en projet", delaiSansContact: 0, qualiteRemplissage: 98, financement: "Oui", date: "28/03/2026" },
+  { id: "P-2026-004", nom: "Cécile Ngono", type: "Reprise chantier", bien: "Villa", region: "Bafoussam", budget: "45M FCFA", statut: "En revue", score: 71, spoc: "Marie Atangana", source: "Site web", derniereAction: "Envoi devis préliminaire", delaiSansContact: 10, qualiteRemplissage: 85, financement: "En cours", date: "08/04/2026" },
+  { id: "P-2026-005", nom: "Franck Mbarga", type: "Ameublement", bien: "Appartement", region: "Douala", budget: "18M FCFA", statut: "En attente", score: 55, spoc: "—", source: "Réseaux sociaux", derniereAction: "Formulaire soumis", delaiSansContact: 3, qualiteRemplissage: 45, financement: "Non", date: "15/04/2026" },
+  { id: "P-2026-006", nom: "Pierre Tagne", type: "Construction neuve", bien: "Immeuble R+3", region: "Douala", budget: "250M FCFA", statut: "En revue", score: 91, spoc: "Marie Atangana", source: "Partenaire Connect", derniereAction: "Visite terrain planifiée", delaiSansContact: 1, qualiteRemplissage: 95, financement: "Oui", date: "16/04/2026" },
+  { id: "P-2026-007", nom: "Hélène Mbouda", type: "Rénovation", bien: "Maison", region: "Yaoundé", budget: "35M FCFA", statut: "Abandonné", score: 38, spoc: "Fabien Nkoulou", source: "Site web", derniereAction: "3 relances sans réponse", delaiSansContact: 21, qualiteRemplissage: 52, financement: "Non", date: "25/03/2026" },
 ];
 
-/* ─── ÉCARTS & RÉSERVES ─── */
-const ECARTS = [
-  { id:"EC-001", projet:"PRJ-004", lot:"LOT II — Gros Œuvre", type:"Non-conformité", gravite:"Critique", source:"Visite AMOA", constat:"Ferraillage poteaux non conforme au plan PRO. Espacement HA12 > norme.", impact:"Qualité + Sécurité", resp:"Bati-Plus", dateOuv:"15/04", ech:"18/04", statut:"Ouvert", preuve:"Photo + Rapport RV-15", relance:2 },
-  { id:"EC-002", projet:"PRJ-001", lot:"LOT II — Gros Œuvre", type:"Écart budgétaire", gravite:"Majeur", source:"Rapport SPOC", constat:"Hausse ciment +8% non anticipée. Impact devis lot II.", impact:"Coût (+4%)", resp:"SPOC / AMOA", dateOuv:"12/04", ech:"20/04", statut:"En traitement", preuve:"Facture fournisseur", relance:1 },
-  { id:"EC-003", projet:"PRJ-004", lot:"LOT I — Travaux Prép.", type:"Retard", gravite:"Majeur", source:"Rapport journalier", constat:"Retard +8 jours sur planning. Cause : approvisionnement et pluie.", impact:"Délai (+8j)", resp:"Bati-Plus", dateOuv:"10/04", ech:"22/04", statut:"Ouvert", preuve:"Planning mis à jour", relance:3 },
-  { id:"EC-004", projet:"PRJ-004", lot:"LOT III — Clos Couvert", type:"Réserve majeure", gravite:"Majeur", source:"Visite AMOA", constat:"Étanchéité toiture non testée avant pose couverture.", impact:"Qualité", resp:"Bati-Plus", dateOuv:"14/04", ech:"19/04", statut:"Ouvert", preuve:"Photo", relance:1 },
-  { id:"EC-005", projet:"PRJ-001", lot:"LOT IV — Second Œuvre", type:"Observation", gravite:"Mineur", source:"Vidéo", constat:"Alignement cloisons RDC à vérifier lors prochaine visite.", impact:"Qualité (mineur)", resp:"BTP Cameroun", dateOuv:"16/04", ech:"25/04", statut:"Ouvert", preuve:"Capture vidéo CAM-003", relance:0 },
-  { id:"EC-006", projet:"PRJ-004", lot:"LOT II — Gros Œuvre", type:"Non-conformité", gravite:"Critique", source:"Visite AMOA", constat:"Verticalité poteaux hors tolérance (>2cm). Reprise nécessaire.", impact:"Qualité + Sécurité", resp:"Bati-Plus", dateOuv:"15/04", ech:"18/04", statut:"Ouvert", preuve:"Photo + Mesure", relance:2 },
-  { id:"R-001", projet:"PRJ-001", lot:"LOT II — Gros Œuvre", type:"Réserve mineure", gravite:"Mineur", source:"Visite AMOA", constat:"Enrobage ferraillage insuffisant sur 2 poteaux RDC.", impact:"Qualité", resp:"BTP Cameroun", dateOuv:"12/04", ech:"16/04", statut:"Levée", preuve:"Photo avant/après", relance:0 },
-  { id:"R-002", projet:"PRJ-006", lot:"—", type:"Observation", gravite:"Mineur", source:"Rapport", constat:"Coordonnées GPS terrain à confirmer avec géomètre.", impact:"Documentation", resp:"AMOA", dateOuv:"08/04", ech:"15/04", statut:"Levée", preuve:"PV géomètre", relance:0 },
+const ADMIN_PROJECTS = [
+  { id: "PRJ-001", nom: "Villa Éden — Douala Bonamoussadi", client: "Jean-Pierre Fouda", type: "Construction neuve", phase: "Exécution", statut: "Actif", budget: 120000000, depense: 52800000, avancement: 44, sante: "Bon", risque: "Faible", spoc: "Marie Atangana", moex: "BTP Cameroun SARL", amoa: "S. Kamga", ville: "Douala", alertes: 1, prochainJalon: "Plancher R+1 — 25/04", validationsEnAttente: 1 },
+  { id: "PRJ-002", nom: "Résidence Kotto — Douala", client: "Moussa Ndiaye", type: "Construction neuve", phase: "Devis", statut: "En validation", budget: 85000000, depense: 2100000, avancement: 8, sante: "Attention", risque: "Moyen", spoc: "Marie Atangana", moex: "—", amoa: "S. Kamga", ville: "Douala", alertes: 2, prochainJalon: "Validation devis — 22/04", validationsEnAttente: 3 },
+  { id: "PRJ-003", nom: "Rénovation App. Bastos — Yaoundé", client: "Amina Tchouangou", type: "Rénovation", phase: "Pré-faisabilité", statut: "Brouillon", budget: 25000000, depense: 0, avancement: 0, sante: "En attente", risque: "Faible", spoc: "Fabien Nkoulou", moex: "—", amoa: "P. Essomba", ville: "Yaoundé", alertes: 0, prochainJalon: "Étude géotechnique — 30/04", validationsEnAttente: 0 },
 ];
 
-/* ─── RAPPORTS ─── */
-const RAPPORTS = [
-  { id:"RJ-16", date:"16/04", type:"Journalier", projet:"PRJ-001", auteur:"B. Ekambi", role:"MOEX", meteo:"Soleil", lot:"LOT II", resume:"Coffrage poteaux R+1. 8 ouvriers. Avancement 75%.", ecarts:0, statut:"À valider", transmissible:false, sensible:false },
-  { id:"RJ-15", date:"15/04", type:"Journalier", projet:"PRJ-001", auteur:"B. Ekambi", role:"MOEX", meteo:"Soleil", lot:"LOT II", resume:"Ferraillage R+1 terminé. Attente contrôle AMOA.", ecarts:0, statut:"Validé", transmissible:true, sensible:false },
-  { id:"RV-15", date:"15/04", type:"Visite AMOA", projet:"PRJ-004", auteur:"S. Kamga", role:"AMOA", meteo:"Nuageux", lot:"LOT II", resume:"5 non-conformités identifiées. Ferraillage + verticalité.", ecarts:5, statut:"À valider", transmissible:false, sensible:true },
-  { id:"RJ-14", date:"14/04", type:"Journalier", projet:"PRJ-004", auteur:"T. Mbede", role:"MOEX", meteo:"Pluie", lot:"LOT I", resume:"Arrêt chantier pour pluie. Jour sans travail justifié.", ecarts:0, statut:"À corriger", transmissible:false, sensible:false },
-  { id:"RV-12", date:"12/04", type:"Visite AMOA", projet:"PRJ-001", auteur:"S. Kamga", role:"AMOA", meteo:"Soleil", lot:"LOT II", resume:"Fondations conformes. Réserve mineure enrobage.", ecarts:1, statut:"Validé", transmissible:true, sensible:false },
-  { id:"RJ-12", date:"12/04", type:"Journalier", projet:"PRJ-001", auteur:"B. Ekambi", role:"MOEX", meteo:"Soleil", lot:"LOT II", resume:"Coulage semelles. RAS.", ecarts:0, statut:"Validé", transmissible:true, sensible:false },
+const AUDIT_LOGS = [
+  { date: "18/04 09:12", user: "Marie Atangana", role: "SPOC", action: "Connexion", cible: "Session ouverte", module: "Système", criticite: "Info", resultat: "OK" },
+  { date: "18/04 08:55", user: "S. Kamga", role: "AMOA", action: "Validation", cible: "Rapport journalier RJ-2026-04-17", module: "Rapports", criticite: "Normale", resultat: "Approuvé" },
+  { date: "18/04 08:45", user: "B. Ekambi", role: "MOEX", action: "Création", cible: "Rapport journalier RJ-2026-04-18", module: "Rapports", criticite: "Normale", resultat: "OK" },
+  { date: "18/04 07:30", user: "Système", role: "Auto", action: "Alerte", cible: "Stock critique : Câble 2.5mm² rouge < seuil", module: "Stock", criticite: "Haute", resultat: "Notifié" },
+  { date: "17/04 18:00", user: "Système", role: "Auto", action: "Relance", cible: "MOEX B. Ekambi — rapport non soumis avant 18h", module: "Rapports", criticite: "Haute", resultat: "Envoyé" },
+  { date: "17/04 16:40", user: "F. Nkoulou", role: "SPOC", action: "Modification", cible: "Prospect P-2026-002 — budget mis à jour", module: "CRM", criticite: "Normale", resultat: "OK" },
+  { date: "17/04 14:30", user: "P. Essomba", role: "AMOA", action: "Création", cible: "Demande d'achat DA-2026-009", module: "Achats", criticite: "Normale", resultat: "OK" },
+  { date: "17/04 11:20", user: "Admin", role: "Admin", action: "Modification droits", cible: "Utilisateur Arc. Njoya — ajout module GED", module: "Utilisateurs", criticite: "Haute", resultat: "OK" },
+  { date: "17/04 09:00", user: "Système", role: "Auto", action: "Alerte météo", cible: "Forte pluie prévue 19/04 — Douala", module: "Météo", criticite: "Haute", resultat: "Notifié" },
+  { date: "16/04 15:30", user: "Marie Atangana", role: "SPOC", action: "Envoi facture", cible: "FAC-003 envoyée à J-P. Fouda", module: "Facturation", criticite: "Normale", resultat: "OK" },
+  { date: "16/04 14:00", user: "S. Kamga", role: "AMOA", action: "Modification devis", cible: "Devis PRJ-001 — ajout ligne Lot III", module: "Devis", criticite: "Haute", resultat: "OK" },
+  { date: "16/04 10:00", user: "Système", role: "Auto", action: "Alerte caméra", cible: "CAM-004 — flux RTSP interrompu depuis 2h", module: "Vidéo", criticite: "Critique", resultat: "Alerte active" },
 ];
 
-/* ─── ÉTUDES & LIVRABLES ─── */
-const ETUDES = [
-  { id:"LIV-001", projet:"PRJ-001", type:"Plan de masse", phase:"APS", version:"v2", auteur:"Arc. Njoya", date:"08/04", statut:"Validé", completude:100, obsAMOA:"Conforme référentiel WeCare.", action:"—" },
-  { id:"LIV-002", projet:"PRJ-001", type:"Plans RDC 1/50", phase:"APD", version:"v2", auteur:"Arc. Njoya", date:"10/04", statut:"En revue", completude:90, obsAMOA:"Cotations à vérifier. Réserve #R-003 à intégrer.", action:"Valider ou rejeter" },
-  { id:"LIV-003", projet:"PRJ-001", type:"Note de calcul structure", phase:"APD", version:"v1", auteur:"BET Structure", date:"13/04", statut:"Reçu", completude:70, obsAMOA:"Incomplet : pas de note sismique.", action:"Demander complément" },
-  { id:"LIV-004", projet:"PRJ-002", type:"Plans distribution APS", phase:"APS", version:"v1", auteur:"Arc. Njoya", date:"12/04", statut:"En revue", completude:85, obsAMOA:"Vérifier conformité nommage pièces + surfaces.", action:"Valider ou rejeter" },
-  { id:"LIV-005", projet:"PRJ-004", type:"Diagnostic structure existante", phase:"Diagnostic", version:"v1", auteur:"BET Diag.", date:"05/04", statut:"Validé", completude:100, obsAMOA:"RAS. Bon état structural global.", action:"—" },
-  { id:"LIV-006", projet:"PRJ-004", type:"Devis reprise v2", phase:"Devis", version:"v2", auteur:"M. Atangana", date:"14/04", statut:"À corriger", completude:60, obsAMOA:"Écart +18%. Poste ferraillage à requalifier.", action:"Correction requise" },
-  { id:"LIV-007", projet:"PRJ-006", type:"Rapport faisabilité terrain", phase:"Pré-faisabilité", version:"v1", auteur:"S. Kamga", date:"08/04", statut:"Validé", completude:100, obsAMOA:"Terrain exploitable. Recommandation G2 AVP.", action:"—" },
-  { id:"LIV-008", projet:"PRJ-006", type:"Étude géotechnique G2 AVP", phase:"Pré-faisabilité", version:"—", auteur:"—", date:"—", statut:"Attendu", completude:0, obsAMOA:"Non encore commandée. Priorité haute.", action:"Lancer commande" },
-];
+// ═══════════════════════════════════════════════════════════════
+// REUSABLE COMPONENTS
+// ═══════════════════════════════════════════════════════════════
 
-/* ─── GED ─── */
-const DOCS = [
-  { id:"DOC-001", nom:"Plan de masse v2.dwg", cat:"Plans", projet:"PRJ-001", version:"v2", date:"08/04", auteur:"Arc. Njoya", statut:"Validé", client:true, lien:"LIV-001" },
-  { id:"DOC-002", nom:"Plans RDC 1/50 v2.pdf", cat:"Plans", projet:"PRJ-001", version:"v2", date:"10/04", auteur:"Arc. Njoya", statut:"En revue", client:false, lien:"VAL-003" },
-  { id:"DOC-003", nom:"Rapport visite 15-04.pdf", cat:"Rapports", projet:"PRJ-004", version:"v1", date:"15/04", auteur:"S. Kamga", statut:"À valider", client:false, lien:"VAL-005" },
-  { id:"DOC-004", nom:"Devis reprise v2.xlsx", cat:"Devis", projet:"PRJ-004", version:"v2", date:"14/04", auteur:"M. Atangana", statut:"À corriger", client:false, lien:"VAL-002" },
-  { id:"DOC-005", nom:"PV réception fondations.pdf", cat:"PV", projet:"PRJ-001", version:"v1", date:"05/04", auteur:"S. Kamga", statut:"Validé", client:true, lien:"—" },
-  { id:"DOC-006", nom:"Photo ferraillage NC.jpg", cat:"Preuves", projet:"PRJ-004", version:"—", date:"15/04", auteur:"S. Kamga", statut:"Rattaché", client:false, lien:"EC-001" },
-  { id:"DOC-007", nom:"Contrat MOE PRJ-001.pdf", cat:"Contrats", projet:"PRJ-001", version:"v1", date:"15/01", auteur:"Admin", statut:"Signé", client:true, lien:"—" },
-  { id:"DOC-008", nom:"Faisabilité Kribi.pdf", cat:"Études", projet:"PRJ-006", version:"v1", date:"08/04", auteur:"S. Kamga", statut:"Validé", client:true, lien:"LIV-007" },
-  { id:"DOC-MANQ-001", nom:"Étude G2 AVP", cat:"Études", projet:"PRJ-006", version:"—", date:"—", auteur:"—", statut:"Manquant", client:false, lien:"LIV-008" },
-  { id:"DOC-MANQ-002", nom:"Note sismique", cat:"Technique", projet:"PRJ-001", version:"—", date:"—", auteur:"—", statut:"Manquant", client:false, lien:"LIV-003" },
-];
-
-/* ─── CAMÉRAS ─── */
-const CAMS = [
-  { id:"CAM-001", nom:"Entrée chantier", zone:"Accès", projet:"PRJ-001", s:"En ligne", evt:"16/04 08:14 — Mouvement détecté", lienEc:"—" },
-  { id:"CAM-002", nom:"Zone matériaux", zone:"Stock", projet:"PRJ-001", s:"En ligne", evt:"16/04 07:30 — Livraison détectée", lienEc:"—" },
-  { id:"CAM-003", nom:"Front GO R+1", zone:"Gros Œuvre", projet:"PRJ-001", s:"En ligne", evt:"16/04 09:45 — Activité continue", lienEc:"EC-005" },
-  { id:"CAM-004", nom:"Panoramique 360", zone:"Vue globale", projet:"PRJ-001", s:"Hors ligne", evt:"14/04 — Coupure réseau", lienEc:"—" },
-  { id:"CAM-005", nom:"Entrée chantier Bali", zone:"Accès", projet:"PRJ-004", s:"En ligne", evt:"15/04 16:20 — Fin journée", lienEc:"—" },
-  { id:"CAM-006", nom:"Zone GO Bali", zone:"Gros Œuvre", projet:"PRJ-004", s:"En ligne", evt:"15/04 14:10 — Activité réduite", lienEc:"EC-006" },
-];
-
-/* ─── MESSAGES ─── */
-const MESSAGES = [
-  { from:"M. Atangana", role:"SPOC", projet:"PRJ-004", sujet:"Devis reprise — écart +18%", prio:"Haute", attente:true, lien:"VAL-002", msgs:[
-    { auteur:"M. Atangana", role:"SPOC", txt:"Le client questionne l'écart de +18% sur le devis. Peux-tu qualifier les postes concernés ?", time:"15/04 09:30" },
-    { auteur:"S. Kamga", role:"AMOA", txt:"J'ai identifié le poste ferraillage comme principal facteur. Rapport de visite en cours de finalisation.", time:"15/04 11:15" },
-  ]},
-  { from:"Arc. Njoya", role:"MOE", projet:"PRJ-001", sujet:"Plans RDC v2 — réserve intégrée", prio:"Moyenne", attente:false, lien:"VAL-003", msgs:[
-    { auteur:"Arc. Njoya", role:"MOE", txt:"Plans RDC v2 transmis avec correction de la réserve #R-003. Merci de valider.", time:"10/04 14:00" },
-    { auteur:"S. Kamga", role:"AMOA", txt:"Reçu. Vérification en cours. Retour prévu d'ici vendredi.", time:"10/04 16:45" },
-  ]},
-  { from:"BTP Cameroun", role:"MOEX", projet:"PRJ-001", sujet:"Demande matériaux — 200 sacs ciment", prio:"Moyenne", attente:true, lien:"VAL-006", msgs:[
-    { auteur:"B. Ekambi", role:"MOEX", txt:"DA-005 soumise pour 200 sacs ciment CPJ. Besoin urgent pour coulage jeudi.", time:"15/04 17:00" },
-  ]},
-  { from:"Bati-Plus", role:"MOEX", projet:"PRJ-004", sujet:"Correction ferraillage — plan d'action", prio:"Haute", attente:true, lien:"EC-001", msgs:[
-    { auteur:"T. Mbede", role:"MOEX", txt:"Suite à votre constat, nous prévoyons reprise ferraillage poteaux P3 et P5. Délai estimé 3 jours.", time:"16/04 08:00" },
-  ]},
-  { from:"J-P Fouda", role:"Client", projet:"PRJ-001", sujet:"Questions sur avancement", prio:"Faible", attente:false, lien:"—", msgs:[
-    { auteur:"J-P Fouda", role:"Client", txt:"Merci pour le rapport de visite. Tout est conforme ?", time:"13/04 20:00" },
-    { auteur:"S. Kamga", role:"AMOA", txt:"Oui, fondations conformes. Réserve mineure levée. Construction en bonne voie.", time:"14/04 09:00" },
-  ]},
-];
-
-/* ─── COMPOSANTS UI ─── */
-function Badge({ children, v = "default", s = "sm" }) {
-  const m = {
-    default:{bg:C.priL,c:C.priD}, success:{bg:C.okL,c:C.okD}, warning:{bg:C.warnL,c:C.warnD},
-    danger:{bg:C.errL,c:C.errD}, info:{bg:C.infoL,c:C.infoD}, purple:{bg:C.purpL,c:C.purpD},
-    dark:{bg:C.bg2,c:"#1F2937"}, active:{bg:C.secL,c:C.secD},
-    critique:{bg:"#FEE2E2",c:"#991B1B"}, majeur:{bg:"#FEF3C7",c:"#92400E"},
-    mineur:{bg:"#DBEAFE",c:"#1E40AF"}, leve:{bg:C.okL,c:C.okD},
+const Badge = ({ children, variant = "default", size = "sm" }) => {
+  const styles = {
+    default: { bg: C.primaryLight, color: C.primaryDark },
+    success: { bg: C.successLight, color: C.successDark },
+    warning: { bg: C.warningLight, color: C.warningDark },
+    danger: { bg: C.dangerLight, color: C.dangerDark },
+    info: { bg: C.infoLight, color: C.infoDark },
+    purple: { bg: C.purpleLight, color: C.purpleDark },
+    dark: { bg: "#F3F4F6", color: "#4B5563" },
+    active: { bg: C.secondaryLight, color: C.secondaryDark },
+    critical: { bg: "#7F1D1D", color: "#FEE2E2" },
   };
-  const st = m[v] || m.default;
-  return <span style={{ display:"inline-flex", alignItems:"center", gap:3, padding:s==="xs"?"1px 5px":"2px 9px", borderRadius:20, fontSize:s==="xs"?9:10, fontWeight:600, background:st.bg, color:st.c, whiteSpace:"nowrap", letterSpacing:0.2 }}>{children}</span>;
-}
-function SB({ s }) {
-  const m = { "En attente":"warning","À valider":"warning","En revue":"info","Validé":"success","Validée":"success","Rejetée":"danger","Reçu":"default","À corriger":"danger","Attendu":"dark","Ouvert":"danger","En traitement":"warning","Levée":"success","Levé":"success","Signé":"success","Manquant":"danger","Rattaché":"purple","En ligne":"success","Hors ligne":"danger","Actif":"success","Brouillon":"dark","En validation":"warning","Transmissible":"active" };
-  return <Badge v={m[s]||"default"}>{s}</Badge>;
-}
-function GravBadge({ g }) {
-  const m = { "Critique":"critique","Majeur":"majeur","Mineur":"mineur","Levée":"leve" };
-  return <Badge v={m[g]||"default"} s="xs">{g}</Badge>;
-}
+  const s = styles[variant] || styles.default;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 4,
+      padding: size === "xs" ? "1px 6px" : size === "lg" ? "5px 14px" : "3px 10px",
+      borderRadius: 20, fontSize: size === "xs" ? 10 : size === "lg" ? 13 : 11,
+      fontWeight: 600, backgroundColor: s.bg, color: s.color,
+      letterSpacing: 0.3, whiteSpace: "nowrap",
+    }}>{children}</span>
+  );
+};
 
-function Kpi({ icon:I, label, value, sub, trend, color=C.sec, accent }) {
-  return <div style={{ background:C.w, borderRadius:10, padding:"12px 14px", border:"1px solid "+C.brd, flex:1, minWidth:135, position:"relative", overflow:"hidden" }}>
-    {accent && <div style={{ position:"absolute", top:0, left:0, width:3, height:"100%", background:color, borderRadius:"10px 0 0 10px" }}/>}
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-      <div style={{ width:28, height:28, borderRadius:7, background:color+"14", display:"flex", alignItems:"center", justifyContent:"center" }}><I size={13} color={color}/></div>
-      {trend!==undefined && <span style={{ fontSize:10, fontWeight:600, color:trend>=0?C.ok:C.err, display:"flex", alignItems:"center", gap:1 }}>{trend>=0?<TrendingUp size={10}/>:<TrendingDown size={10}/>}{Math.abs(trend)}%</span>}
+const RoleBadge = ({ role }) => {
+  const map = { SPOC: "default", AMOA: "active", MOE: "purple", MOEX: "warning", Client: "info", Admin: "dark", Auto: "dark" };
+  return <Badge variant={map[role] || "dark"}>{role}</Badge>;
+};
+
+const StatusBadge = ({ statut }) => {
+  const map = {
+    "Actif": "success", "Inactif": "dark", "En attente": "warning", "En revue": "info",
+    "Converti": "success", "Abandonné": "danger", "Brouillon": "dark", "En validation": "warning",
+    "Opérationnel": "success", "Qualifié": "active", "En onboarding": "info", "Invité": "dark",
+    "Suspendu": "danger", "À renforcer": "warning",
+    "Bon": "success", "Attention": "warning", "Critique": "danger", "En attente": "dark",
+    "Faible": "success", "Moyen": "warning", "Élevé": "danger",
+  };
+  return <Badge variant={map[statut] || "default"}>{statut}</Badge>;
+};
+
+const MaturiteBadge = ({ level }) => {
+  const map = {
+    "Référent": "success", "Confirmé": "active", "Autonome": "info",
+    "Assisté": "warning", "Découverte": "dark", "—": "dark",
+  };
+  return <Badge variant={map[level] || "dark"} size="xs">{level}</Badge>;
+};
+
+const ScoreBar = ({ value, max = 100, height = 6, showLabel = false }) => {
+  const pct = Math.min(100, (value / max) * 100);
+  const color = pct >= 80 ? C.success : pct >= 50 ? C.primary : pct >= 30 ? C.warning : C.danger;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ flex: 1, background: "#F3F4F6", borderRadius: height, height, overflow: "hidden", minWidth: 60 }}>
+        <div style={{ width: `${pct}%`, height: "100%", borderRadius: height, background: color, transition: "width 0.5s ease" }} />
+      </div>
+      {showLabel && <span style={{ fontSize: 11, fontWeight: 600, color, minWidth: 28, textAlign: "right" }}>{value}%</span>}
     </div>
-    <div style={{ fontSize:17, fontWeight:800, color:C.dk, marginTop:5 }}>{value}</div>
-    <div style={{ fontSize:10, color:C.g, marginTop:1 }}>{label}</div>
-    {sub && <div style={{ fontSize:9, color:C.lG }}>{sub}</div>}
-  </div>;
-}
+  );
+};
 
-function Pr({ value, plan, h=5 }) {
-  return <div style={{ width:"100%", background:C.bg2, borderRadius:h, height:h, overflow:"hidden", position:"relative" }}>
-    {plan!==undefined && <div style={{ position:"absolute", left:Math.min(100,plan)+"%", top:0, width:1.5, height:"100%", background:C.lG, zIndex:2 }}/>}
-    <div style={{ width:Math.min(100,value)+"%", height:"100%", borderRadius:h, background:value>=80?C.ok:value>=40?C.sec:value>=20?C.warn:C.err, transition:"width 0.4s" }}/>
-  </div>;
-}
+const KPICard = ({ icon: Icon, label, value, sub, trend, color = C.primary, accent, onClick }) => (
+  <div onClick={onClick} style={{
+    background: "#fff", borderRadius: 12, padding: "16px 18px",
+    border: `1px solid ${C.border}`, flex: 1, minWidth: 160,
+    display: "flex", flexDirection: "column", gap: 6,
+    cursor: onClick ? "pointer" : "default",
+    borderLeft: accent ? `3px solid ${accent}` : undefined,
+    transition: "box-shadow 0.15s",
+  }} onMouseEnter={e => onClick && (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)")}
+     onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ width: 34, height: 34, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: `${color}12` }}>
+        <Icon size={16} color={color} />
+      </div>
+      {trend !== undefined && (
+        <span style={{ fontSize: 11, fontWeight: 600, display: "flex", alignItems: "center", gap: 2, color: trend >= 0 ? C.success : C.danger }}>
+          {trend >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}{Math.abs(trend)}%
+        </span>
+      )}
+    </div>
+    <div style={{ fontSize: 20, fontWeight: 800, color: C.dark, lineHeight: 1.1 }}>{value}</div>
+    <div style={{ fontSize: 11, color: C.gray, lineHeight: 1.3 }}>{label}</div>
+    {sub && <div style={{ fontSize: 10, color: C.lightGray }}>{sub}</div>}
+  </div>
+);
 
-function Cd({ children, style:es, onClick, accent }) {
-  return <div onClick={onClick} style={{ background:C.w, borderRadius:10, padding:14, border:"1px solid "+C.brd, cursor:onClick?"pointer":"default", position:"relative", overflow:"hidden", ...es }}>
-    {accent && <div style={{ position:"absolute", top:0, left:0, width:3, height:"100%", background:accent }}/>}
-    {children}
-  </div>;
-}
+const Card = ({ children, style: s, title, action, noPad }) => (
+  <div style={{ background: "#fff", borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden", ...s }}>
+    {title && (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: `1px solid ${C.border}` }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: C.dark }}>{title}</span>
+        {action}
+      </div>
+    )}
+    {!noPad && <div style={{ padding: title ? "14px 18px" : 18 }}>{children}</div>}
+    {noPad && children}
+  </div>
+);
 
-function Bt({ children, v="primary", icon:I, onClick, small }) {
-  const p = v==="primary";
-  const d = v==="danger";
-  return <button onClick={onClick} style={{ display:"inline-flex", alignItems:"center", gap:4, borderRadius:6, fontWeight:600, cursor:"pointer", fontSize:small?10:11, padding:small?"3px 8px":"5px 11px", background:p?C.sec:d?C.err:C.bgL, color:p||d?"#fff":C.dkG, border:p||d?"none":"1px solid "+C.brd, transition:"all 0.15s" }}>{I && <I size={small?10:12}/>}{children}</button>;
-}
-
-function ST({ children, right }) {
-  return <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-    <h3 style={{ fontSize:13, fontWeight:700, color:C.dk, margin:0 }}>{children}</h3>
-    {right}
-  </div>;
-}
-
-function Tbl({ cols, data, compact }) {
-  return <div style={{ overflowX:"auto", borderRadius:8, border:"1px solid "+C.brd }}>
-    <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11 }}>
-      <thead><tr style={{ background:C.bgL }}>{cols.map((c,i) => <th key={i} style={{ padding:compact?"5px 8px":"7px 10px", textAlign:"left", fontWeight:600, color:C.g, fontSize:9, textTransform:"uppercase", letterSpacing:0.5, borderBottom:"1px solid "+C.brd }}>{c.label}</th>)}</tr></thead>
-      <tbody>{data.map((r,ri) => <tr key={ri} style={{ borderBottom:"1px solid "+C.brd, background:r._highlight?C.errL+"40":"transparent" }}>{cols.map((c,ci) => <td key={ci} style={{ padding:compact?"5px 8px":"7px 10px", color:C.dkG, verticalAlign:"top" }}>{c.render ? c.render(r) : r[c.key]}</td>)}</tr>)}</tbody>
+const MiniTable = ({ columns, data, maxH }) => (
+  <div style={{ overflowX: "auto", maxHeight: maxH, overflowY: maxH ? "auto" : undefined }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+      <thead>
+        <tr>
+          {columns.map((col, i) => (
+            <th key={i} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: C.gray, fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: `1px solid ${C.border}`, background: C.bg, position: "sticky", top: 0, zIndex: 1 }}>{col.label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((row, ri) => (
+          <tr key={ri} style={{ borderBottom: `1px solid ${C.borderLight}` }} onMouseEnter={e => e.currentTarget.style.background = C.bg} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+            {columns.map((col, ci) => (
+              <td key={ci} style={{ padding: "8px 12px", color: C.darkGray }}>{col.render ? col.render(row) : row[col.key]}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
     </table>
-  </div>;
-}
+  </div>
+);
 
-function TabBar({ tabs, active, onChange }) {
-  return <div style={{ display:"flex", gap:2, background:C.bg2, borderRadius:7, padding:2 }}>
-    {tabs.map(t => <button key={t.k} onClick={()=>onChange(t.k)} style={{ padding:"5px 12px", borderRadius:5, border:"none", cursor:"pointer", fontSize:10, fontWeight:active===t.k?700:500, background:active===t.k?C.w:"transparent", color:active===t.k?C.dk:C.g, boxShadow:active===t.k?"0 1px 3px rgba(0,0,0,0.06)":"none", transition:"all 0.15s" }}>{t.l}{t.count!==undefined && <span style={{ marginLeft:4, fontSize:8, fontWeight:700, padding:"0 4px", borderRadius:8, background:active===t.k?C.sec+"18":C.bg2, color:active===t.k?C.sec:C.lG }}>{t.count}</span>}</button>)}
-  </div>;
-}
+const Btn = ({ children, variant = "primary", size = "sm", icon: Icon, onClick }) => {
+  const styles = {
+    primary: { background: C.primary, color: "#fff", border: "none" },
+    secondary: { background: C.bg, color: C.darkGray, border: `1px solid ${C.border}` },
+    ghost: { background: "transparent", color: C.gray, border: "none" },
+    danger: { background: C.danger, color: "#fff", border: "none" },
+    outline: { background: "transparent", color: C.primary, border: `1px solid ${C.primary}` },
+  };
+  const s = styles[variant];
+  return (
+    <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 7, fontWeight: 600, cursor: "pointer", fontSize: size === "xs" ? 11 : 12, padding: size === "xs" ? "4px 8px" : "6px 14px", transition: "opacity 0.12s", ...s }}>
+      {Icon && <Icon size={size === "xs" ? 12 : 14} />}{children}
+    </button>
+  );
+};
 
-function TempBadge({ t }) {
-  const cfg = { favorable:{c:C.ok,l:"Favorable",i:"●"}, stable:{c:C.warn,l:"Stable",i:"●"}, "dégradé":{c:C.err,l:"Dégradé",i:"●"} };
-  const s = cfg[t]||cfg.stable;
-  return <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:9, fontWeight:600, color:s.c }}><span style={{ fontSize:7 }}>{s.i}</span>{s.l}</span>;
-}
+const TabBar = ({ tabs, active, onChange }) => (
+  <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 16 }}>
+    {tabs.map(t => (
+      <button key={t.key} onClick={() => onChange(t.key)} style={{
+        padding: "9px 16px", fontSize: 12, fontWeight: active === t.key ? 700 : 500,
+        color: active === t.key ? C.primary : C.gray,
+        borderBottom: active === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
+        background: "none", border: "none", cursor: "pointer", marginBottom: -2, display: "flex", alignItems: "center", gap: 6,
+      }}>
+        {t.label}
+        {t.count !== undefined && (
+          <span style={{ fontSize: 10, fontWeight: 700, background: active === t.key ? C.primaryLight : "#F3F4F6", color: active === t.key ? C.primaryDark : C.gray, padding: "1px 7px", borderRadius: 10 }}>{t.count}</span>
+        )}
+      </button>
+    ))}
+  </div>
+);
 
-function fmt(n) { return (n/1e6).toFixed(n>=1e6?1:2)+"M"; }
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 1. COCKPIT AMOA                                                      */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageCockpit({ onNav }) {
-  const vEnAttente = VALIDATIONS.filter(v=>v.statut==="En attente");
-  const ecOuverts = ECARTS.filter(e=>e.statut==="Ouvert"||e.statut==="En traitement");
-  const rapAVal = RAPPORTS.filter(r=>r.statut==="À valider");
-  const pjRisque = PROJECTS.filter(p=>p.risque==="Élevé"||p.conformite<70);
-  const actCorr = ECARTS.filter(e=>e.statut==="Ouvert"&&new Date("2026-04-"+e.ech.split("/")[0])<new Date("2026-04-18"));
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    {/* HEADER */}
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-      <div>
-        <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Cockpit AMOA</div>
-        <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Tour de contrôle</h2>
-        <div style={{ fontSize:10, color:C.g }}>Mercredi 16 avril 2026 · S. Kamga</div>
+const AlertRow = ({ icon: Icon, text, sub, severity = "warning", time }) => {
+  const colors = { critical: C.danger, warning: C.warning, info: C.info, success: C.success };
+  const cl = colors[severity] || C.warning;
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+      <div style={{ width: 28, height: 28, borderRadius: 7, background: `${cl}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+        <Icon size={14} color={cl} />
       </div>
-      <div style={{ display:"flex", gap:6 }}>
-        <Bt icon={Plus} v="ghost">Nouvelle réserve</Bt>
-        <Bt icon={FileCheck}>Valider en lot</Bt>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: C.dark }}>{text}</div>
+        {sub && <div style={{ fontSize: 11, color: C.gray, marginTop: 2 }}>{sub}</div>}
       </div>
+      {time && <span style={{ fontSize: 10, color: C.lightGray, whiteSpace: "nowrap" }}>{time}</span>}
     </div>
+  );
+};
 
-    {/* KPI EXÉCUTIF */}
-    <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-      <Kpi icon={Briefcase} label="Projets suivis" value="4" color={C.sec} accent/>
-      <Kpi icon={Clock} label="Validations en attente" value={String(vEnAttente.length)} color={C.warn} accent/>
-      <Kpi icon={AlertTriangle} label="Écarts ouverts" value={String(ecOuverts.length)} color={C.err} accent/>
-      <Kpi icon={Shield} label="Réserves critiques" value={String(ECARTS.filter(e=>e.gravite==="Critique"&&e.statut!=="Levée").length)} color={C.err} accent/>
-      <Kpi icon={FileCheck} label="Rapports à relire" value={String(rapAVal.length)} color={C.info} accent/>
-      <Kpi icon={CircleAlert} label="Actions correctives en retard" value={String(actCorr.length)} color={C.rose} accent/>
+const Dot = ({ color = C.success, size = 7 }) => (
+  <span style={{ display: "inline-block", width: size, height: size, borderRadius: "50%", background: color, flexShrink: 0 }} />
+);
+
+const Avatar = ({ name, role, size = 32 }) => {
+  const rs = ROLE_STYLES[role] || ROLE_STYLES.Client;
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: rs.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.38, fontWeight: 700, color: rs.color, flexShrink: 0 }}>
+      {name?.charAt(0) || "?"}
     </div>
+  );
+};
 
-    {/* ACTIONS URGENTES */}
-    <Cd accent={C.err} style={{ background:C.errL+"18" }}>
-      <ST right={<Badge v="danger" s="xs">{6} actions</Badge>}>⚡ Actions urgentes AMOA</ST>
-      <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
-        {[
-          { m:"Valider rapport RJ-16 — Coffrage R+1 (PRJ-001)", t:"Validation", c:C.warn, dl:"Aujourd'hui" },
-          { m:"Qualifier écart +18% devis reprise (PRJ-004)", t:"Contrôle budget", c:C.err, dl:"18/04" },
-          { m:"Documenter NC ferraillage — 2 constats critiques (PRJ-004)", t:"Non-conformité", c:C.err, dl:"18/04" },
-          { m:"Vérifier cohérence rapport RV-15 vs vidéo CAM-006 (PRJ-004)", t:"Corroboration", c:C.warn, dl:"17/04" },
-          { m:"Plan RDC v2 en revue depuis 6 jours (PRJ-001)", t:"Livrable", c:C.info, dl:"20/04" },
-          { m:"Remonter situation PRJ-004 au SPOC — escalade recommandée", t:"Escalade", c:C.err, dl:"Aujourd'hui" },
-        ].map((a,i) => <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 10px", borderRadius:6, background:C.w, border:"1px solid "+C.brd, borderLeft:"3px solid "+a.c }}>
-          <div style={{ flex:1 }}><span style={{ fontSize:11, color:C.dk, fontWeight:500 }}>{a.m}</span></div>
-          <Badge v={a.c===C.err?"danger":a.c===C.warn?"warning":"info"} s="xs">{a.t}</Badge>
-          <span style={{ fontSize:9, color:C.lG, minWidth:60, textAlign:"right" }}>{a.dl}</span>
-        </div>)}
+// ═══════════════════════════════════════════════════════════════
+// 1. VUE GLOBALE ADMIN — Cockpit exécutif
+// ═══════════════════════════════════════════════════════════════
+
+const AdminDashboard = ({ onNav }) => {
+  const alerts = [
+    { icon: AlertTriangle, text: "Stock critique : Câble 2.5mm² rouge — 8 rouleaux (seuil : 4)", sub: "PRJ-001 — Impact potentiel sur Lot VII Électricité", severity: "warning", time: "08:30" },
+    { icon: XCircle, text: "Caméra CAM-004 — flux RTSP interrompu depuis 14h", sub: "PRJ-001 — Zone arrière chantier non surveillée", severity: "critical", time: "16/04" },
+    { icon: CloudSun, text: "Alerte météo : forte pluie prévue 19/04 à Douala", sub: "Impact possible sur coffrage poteaux R+1", severity: "warning", time: "17/04" },
+    { icon: Clock, text: "Prospect P-2026-004 (Cécile Ngono) — 10 jours sans contact", sub: "Dernière action : envoi devis préliminaire", severity: "info", time: "08/04" },
+    { icon: UserX, text: "Arc. Njoya (MOE) — score adoption 45%, onboarding incomplet", sub: "3 modules non maîtrisés — intervention suggérée", severity: "warning", time: "15/04" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>Centre de Gouvernance</h2>
+          <p style={{ fontSize: 12, color: C.gray, margin: "4px 0 0" }}>Vue consolidée de la plateforme — 18 avril 2026</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Btn icon={Download} variant="secondary">Export</Btn>
+          <Btn icon={RefreshCw} variant="secondary">Rafraîchir</Btn>
+        </div>
       </div>
-    </Cd>
 
-    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-      {/* VALIDATIONS À TRAITER */}
-      <Cd accent={C.warn}>
-        <ST right={<span onClick={()=>onNav("validations")} style={{ fontSize:10, color:C.sec, cursor:"pointer", fontWeight:600 }}>Voir tout →</span>}>Validations à traiter</ST>
-        <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
-          {vEnAttente.slice(0,4).map(v => <div key={v.id} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 8px", borderRadius:5, background:v.crit?C.errL+"30":C.bgL, border:"1px solid "+(v.crit?C.err+"20":C.brd) }}>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:10, fontWeight:600, color:C.dk }}>{v.objet}</div>
-              <div style={{ fontSize:9, color:C.g }}>{v.projet} · {v.auteur} · {v.date}</div>
+      {/* KPIs de tête */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+        <KPICard icon={Users} label="Prospects ce mois" value="7" sub="3 en attente · 2 en revue" trend={22} />
+        <KPICard icon={Target} label="Taux conversion" value="43%" sub="YTD — 3 convertis / 7" color={C.warning} trend={-5} />
+        <KPICard icon={Building2} label="Projets actifs" value="3" sub="1 exécution · 1 devis · 1 pré-faisabilité" color={C.secondary} />
+        <KPICard icon={DollarSign} label="CA Pipeline" value="230M" sub="FCFA total" color={C.success} trend={12} />
+        <KPICard icon={AlertTriangle} label="Alertes actives" value="5" sub="1 critique · 3 warning · 1 info" color={C.danger} accent={C.danger} />
+        <KPICard icon={UserCheck} label="Utilisateurs actifs" value="8/10" sub="2 onboarding · 1 inactif" color={C.info} onClick={() => onNav("users")} />
+      </div>
+
+      {/* Row 2: Alerts + Pipeline */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {/* Alertes & Actions urgentes */}
+        <Card title="Alertes & Actions urgentes" action={<Badge variant="danger" size="xs">5 actives</Badge>} noPad>
+          <div style={{ padding: "4px 18px 14px" }}>
+            {alerts.map((a, i) => <AlertRow key={i} {...a} />)}
+          </div>
+        </Card>
+
+        {/* Pipeline prospects */}
+        <Card title="Pipeline Prospects" action={<Btn variant="ghost" size="xs" onClick={() => onNav("prospects")}>Voir tout <ChevronRight size={12} /></Btn>}>
+          <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            {[
+              { label: "En attente", count: 2, color: C.warning },
+              { label: "En revue", count: 3, color: C.info },
+              { label: "Convertis", count: 1, color: C.success },
+              { label: "Abandonnés", count: 1, color: C.danger },
+            ].map((s, i) => (
+              <div key={i} style={{ flex: 1, textAlign: "center", padding: "10px 0", borderRadius: 8, background: `${s.color}08`, border: `1px solid ${s.color}20` }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.count}</div>
+                <div style={{ fontSize: 10, color: C.gray, marginTop: 2 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+          {/* Pipeline bar */}
+          <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 10, marginBottom: 10 }}>
+            <div style={{ width: "28%", background: C.warning }} title="En attente" />
+            <div style={{ width: "43%", background: C.info }} title="En revue" />
+            <div style={{ width: "15%", background: C.success }} title="Convertis" />
+            <div style={{ width: "14%", background: C.danger }} title="Abandonnés" />
+          </div>
+          <div style={{ fontSize: 11, color: C.gray }}>Budget total pipeline : <strong style={{ color: C.dark }}>578M FCFA</strong> — Cycle moyen : <strong style={{ color: C.dark }}>18 jours</strong></div>
+        </Card>
+      </div>
+
+      {/* Row 3: Projets + Utilisateurs à surveiller */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 0.7fr", gap: 16 }}>
+        {/* Projets en cours */}
+        <Card title="Projets en cours" action={<Btn variant="ghost" size="xs" onClick={() => onNav("projets")}>Tous les projets <ChevronRight size={12} /></Btn>} noPad>
+          <div style={{ padding: "0 0 4px" }}>
+            <MiniTable columns={[
+              { key: "nom", label: "Projet", render: r => (
+                <div>
+                  <div style={{ fontWeight: 600, color: C.dark, fontSize: 12 }}>{r.nom}</div>
+                  <div style={{ fontSize: 10, color: C.gray }}>{r.client} · {r.ville}</div>
+                </div>
+              )},
+              { key: "phase", label: "Phase", render: r => <Badge variant={r.phase === "Exécution" ? "success" : r.phase === "Devis" ? "info" : "dark"}>{r.phase}</Badge> },
+              { key: "avancement", label: "Avancement", render: r => <ScoreBar value={r.avancement} showLabel /> },
+              { key: "sante", label: "Santé", render: r => <StatusBadge statut={r.sante} /> },
+              { key: "budget", label: "Budget", render: r => (
+                <div style={{ fontSize: 11 }}>
+                  <div style={{ fontWeight: 600, color: C.dark }}>{(r.depense / 1000000).toFixed(0)}M / {(r.budget / 1000000).toFixed(0)}M</div>
+                  <ScoreBar value={(r.depense / r.budget) * 100} height={4} />
+                </div>
+              )},
+              { key: "alertes", label: "Alertes", render: r => r.alertes > 0 ? <Badge variant="danger" size="xs">{r.alertes}</Badge> : <span style={{ color: C.lightGray }}>—</span> },
+            ]} data={ADMIN_PROJECTS} />
+          </div>
+        </Card>
+
+        {/* Utilisateurs à surveiller */}
+        <Card title="Utilisateurs à surveiller" action={<Btn variant="ghost" size="xs" onClick={() => onNav("users")}>Gérer <ChevronRight size={12} /></Btn>}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {ADMIN_USERS.filter(u => u.scoreAdoption < 60 || u.statut === "Inactif" || u.incidents > 0).map((u, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                <Avatar name={u.nom} role={u.role} size={30} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.dark }}>{u.nom}</div>
+                  <div style={{ fontSize: 10, color: C.gray }}>{u.role} · Adoption: {u.scoreAdoption}%</div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+                  <MaturiteBadge level={u.maturite} />
+                  {u.incidents > 0 && <span style={{ fontSize: 10, color: C.danger }}>{u.incidents} incident{u.incidents > 1 ? "s" : ""}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Row 4: Activité récente + Synthèse IA */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <Card title="Activité récente" action={<Btn variant="ghost" size="xs" onClick={() => onNav("audit")}>Journal complet <ChevronRight size={12} /></Btn>} noPad>
+          <div style={{ padding: "0 0 4px" }}>
+            <MiniTable columns={[
+              { key: "date", label: "Date", render: r => <span style={{ fontFamily: "monospace", fontSize: 10, color: C.gray }}>{r.date}</span> },
+              { key: "user", label: "Utilisateur", render: r => <span style={{ fontWeight: 600, fontSize: 11 }}>{r.user}</span> },
+              { key: "role", label: "Rôle", render: r => <RoleBadge role={r.role} /> },
+              { key: "action", label: "Action", render: r => <span style={{ fontSize: 11 }}>{r.action}</span> },
+              { key: "cible", label: "Objet", render: r => <span style={{ fontSize: 11, color: C.gray, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{r.cible}</span> },
+            ]} data={AUDIT_LOGS.slice(0, 6)} maxH={240} />
+          </div>
+        </Card>
+
+        {/* Synthèse IA Admin */}
+        <Card style={{ background: `linear-gradient(135deg, ${C.dark} 0%, ${C.dark2} 100%)`, borderColor: C.dark }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: `${C.primary}25`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Brain size={16} color={C.primary} />
             </div>
-            <Badge v={v.risque==="Élevé"?"danger":v.risque==="Moyen"?"warning":"default"} s="xs">{v.risque}</Badge>
-            <span style={{ fontSize:9, color:C.lG }}>{v.delai}</span>
-          </div>)}
-        </div>
-      </Cd>
-
-      {/* ÉCARTS CRITIQUES */}
-      <Cd accent={C.err}>
-        <ST right={<span onClick={()=>onNav("ecarts")} style={{ fontSize:10, color:C.sec, cursor:"pointer", fontWeight:600 }}>Voir tout →</span>}>Écarts critiques</ST>
-        <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
-          {ECARTS.filter(e=>e.gravite==="Critique"&&e.statut!=="Levée").map(e => <div key={e.id} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 8px", borderRadius:5, background:C.errL+"20", border:"1px solid "+C.err+"15" }}>
-            <AlertOctagon size={12} color={C.err}/>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:10, fontWeight:600, color:C.dk }}>{e.constat.substring(0,65)}…</div>
-              <div style={{ fontSize:9, color:C.g }}>{e.projet} · {e.lot} · {e.resp}</div>
-            </div>
-            <span style={{ fontSize:9, color:C.err, fontWeight:600 }}>Éch. {e.ech}</span>
-          </div>)}
-        </div>
-      </Cd>
-    </div>
-
-    {/* PROJETS SOUS SURVEILLANCE */}
-    <ST>Projets sous surveillance</ST>
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:10 }}>
-      {PROJECTS.map(p => <Cd key={p.id} onClick={()=>onNav("projets")} style={{ cursor:"pointer" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-          <div>
-            <span style={{ fontFamily:"monospace", fontSize:9, color:C.sec }}>{p.id}</span>
-            <div style={{ fontSize:13, fontWeight:700, color:C.dk }}>{p.nom}</div>
-            <div style={{ fontSize:9, color:C.g }}><MapPin size={8} style={{display:"inline"}}/> {p.loc} · {p.phase}</div>
-          </div>
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:3 }}>
-            <Badge v={p.risque==="Élevé"?"danger":p.risque==="Modéré"?"warning":"success"} s="xs">{p.risque}</Badge>
-            <TempBadge t={p.tempCtrl}/>
-          </div>
-        </div>
-        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
-          <span style={{ fontSize:10, color:C.g }}>Avancement</span>
-          <span style={{ fontSize:10, fontWeight:700, color:C.sec }}>{p.av}% <span style={{color:C.lG,fontWeight:400}}>/ {p.avPlan}% planifié</span></span>
-        </div>
-        <Pr value={p.av} plan={p.avPlan}/>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:4, marginTop:8 }}>
-          {[
-            { l:"Budget", v:fmt(p.budget) },
-            { l:"Conformité", v:p.conformite+"%", c:p.conformite<70?C.err:p.conformite<85?C.warn:C.ok },
-            { l:"Réserves", v:String(p.reservesOuv), c:p.reservesOuv>2?C.err:C.g },
-            { l:"Validations", v:String(p.validAttente), c:p.validAttente>3?C.warn:C.g },
-          ].map((k,i) => <div key={i} style={{ padding:"3px 5px", borderRadius:3, background:C.bgL, fontSize:9, textAlign:"center" }}>
-            <div style={{ color:C.g }}>{k.l}</div>
-            <div style={{ fontWeight:700, color:k.c||C.dk }}>{k.v}</div>
-          </div>)}
-        </div>
-        <div style={{ marginTop:6, fontSize:9, color:C.g }}>Prochain jalon : <b style={{color:C.dk}}>{p.prochJalon}</b></div>
-      </Cd>)}
-    </div>
-
-    {/* SYNTHÈSE AMOA DU JOUR */}
-    <Cd style={{ background:C.sec+"06", border:"1px solid "+C.sec+"20" }}>
-      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
-        <Brain size={14} color={C.sec}/>
-        <span style={{ fontSize:13, fontWeight:700, color:C.dk }}>Synthèse AMOA du jour</span>
-      </div>
-      <div style={{ fontSize:11, color:C.dkG, lineHeight:1.7 }}>
-        <b>Attention prioritaire :</b> PRJ-004 concentre 6 écarts ouverts dont 2 critiques (ferraillage + verticalité). Escalade au SPOC recommandée. 
-        Le devis reprise présente un écart de +18% nécessitant requalification du poste ferraillage avant transmission au client.<br/>
-        <b>PRJ-001 :</b> Avancement conforme. Pluie vendredi 18/04 (35mm) — coulage avancé à jeudi. Rapport RJ-16 à valider.<br/>
-        <b>Publiable au client :</b> Rapport visite RV-12, rapport RJ-15, plan de masse v2, PV fondations.<br/>
-        <b>Prudence :</b> Ne pas transmettre rapport RV-15 (PRJ-004) avant consolidation des corrections.
-      </div>
-    </Cd>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 2. MES PROJETS                                                       */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageProjets() {
-  const [filtre, setFiltre] = useState("tous");
-  const filtered = filtre==="tous"?PROJECTS:filtre==="critique"?PROJECTS.filter(p=>p.risque==="Élevé"||p.conformite<70):filtre==="validation"?PROJECTS.filter(p=>p.validAttente>0):PROJECTS;
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-      <div>
-        <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Portefeuille AMOA</div>
-        <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Mes Projets</h2>
-      </div>
-      <TabBar tabs={[{k:"tous",l:"Tous",count:PROJECTS.length},{k:"critique",l:"Critiques",count:PROJECTS.filter(p=>p.risque==="Élevé"||p.conformite<70).length},{k:"validation",l:"En validation",count:PROJECTS.filter(p=>p.validAttente>0).length}]} active={filtre} onChange={setFiltre}/>
-    </div>
-    <Tbl cols={[
-      { label:"Projet", render:r=><div><span style={{fontFamily:"monospace",fontSize:9,color:C.sec}}>{r.id}</span><div style={{fontWeight:700,fontSize:12}}>{r.nom}</div><div style={{fontSize:9,color:C.g}}>{r.loc}</div></div> },
-      { label:"Phase", render:r=><Badge v="dark">{r.phase}</Badge> },
-      { label:"Avancement", render:r=><div style={{minWidth:80}}><div style={{display:"flex",justifyContent:"space-between",fontSize:9,marginBottom:2}}><span>{r.av}%</span><span style={{color:C.lG}}>Plan {r.avPlan}%</span></div><Pr value={r.av} plan={r.avPlan}/></div> },
-      { label:"Budget", render:r=><div><div style={{fontWeight:700}}>{fmt(r.budget)}</div><div style={{fontSize:9,color:C.g}}>Dép. {fmt(r.dep)}</div></div> },
-      { label:"Conformité", render:r=><div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:30,height:30,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:r.conformite>=85?C.okL:r.conformite>=70?C.warnL:C.errL,color:r.conformite>=85?C.okD:r.conformite>=70?C.warnD:C.errD,fontSize:10,fontWeight:800}}>{r.conformite}</div></div> },
-      { label:"Réserves", render:r=><span style={{fontWeight:700,color:r.reservesOuv>2?C.err:r.reservesOuv>0?C.warn:C.ok}}>{r.reservesOuv}</span> },
-      { label:"Écarts", render:r=><span style={{fontWeight:700,color:r.ecartsOuv>2?C.err:r.ecartsOuv>0?C.warn:C.ok}}>{r.ecartsOuv}</span> },
-      { label:"Validations", render:r=><Badge v={r.validAttente>3?"danger":r.validAttente>0?"warning":"success"}>{r.validAttente} en att.</Badge> },
-      { label:"Risque", render:r=><Badge v={r.risque==="Élevé"?"danger":r.risque==="Modéré"?"warning":"success"}>{r.risque}</Badge> },
-      { label:"Contrôle", render:r=><TempBadge t={r.tempCtrl}/> },
-      { label:"Prochain jalon", render:r=><span style={{fontSize:9,color:C.g}}>{r.prochJalon}</span> },
-    ]} data={filtered.map(p=>({...p,_highlight:p.risque==="Élevé"}))}/>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 3. ÉTUDES & LIVRABLES                                                */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageEtudes() {
-  const [tab, setTab] = useState("tous");
-  const tabs = [
-    { k:"tous", l:"Tous", count:ETUDES.length },
-    { k:"revue", l:"En revue", count:ETUDES.filter(e=>e.statut==="En revue").length },
-    { k:"corriger", l:"À corriger", count:ETUDES.filter(e=>e.statut==="À corriger").length },
-    { k:"attendu", l:"Attendu", count:ETUDES.filter(e=>e.statut==="Attendu").length },
-    { k:"valide", l:"Validés", count:ETUDES.filter(e=>e.statut==="Validé").length },
-  ];
-  const filtered = tab==="tous"?ETUDES:tab==="revue"?ETUDES.filter(e=>e.statut==="En revue"):tab==="corriger"?ETUDES.filter(e=>e.statut==="À corriger"):tab==="attendu"?ETUDES.filter(e=>e.statut==="Attendu"):ETUDES.filter(e=>e.statut==="Validé");
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-      <div>
-        <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Centre de contrôle</div>
-        <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Études & Livrables</h2>
-      </div>
-      <TabBar tabs={tabs} active={tab} onChange={setTab}/>
-    </div>
-    <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-      <Kpi icon={FileText} label="Livrables total" value={String(ETUDES.length)} color={C.sec}/>
-      <Kpi icon={Eye} label="En revue" value={String(ETUDES.filter(e=>e.statut==="En revue").length)} color={C.info}/>
-      <Kpi icon={AlertTriangle} label="À corriger" value={String(ETUDES.filter(e=>e.statut==="À corriger").length)} color={C.err}/>
-      <Kpi icon={CircleAlert} label="Attendus" value={String(ETUDES.filter(e=>e.statut==="Attendu").length)} color={C.warn}/>
-    </div>
-    <Tbl cols={[
-      { label:"Réf.", render:r=><span style={{fontFamily:"monospace",fontSize:9,color:C.sec,fontWeight:600}}>{r.id}</span> },
-      { label:"Livrable", render:r=><div><div style={{fontWeight:600}}>{r.type}</div><div style={{fontSize:9,color:C.g}}>{r.projet}</div></div> },
-      { label:"Phase", render:r=><Badge v="purple" s="xs">{r.phase}</Badge> },
-      { label:"Version", render:r=><span style={{fontFamily:"monospace",fontSize:10}}>{r.version}</span> },
-      { label:"Auteur", render:r=><span style={{fontSize:10}}>{r.auteur}</span> },
-      { label:"Date", key:"date" },
-      { label:"Complétude", render:r=><div style={{display:"flex",alignItems:"center",gap:4,minWidth:60}}><Pr value={r.completude} h={4}/><span style={{fontSize:9,fontWeight:600}}>{r.completude}%</span></div> },
-      { label:"Statut", render:r=><SB s={r.statut}/> },
-      { label:"Observation AMOA", render:r=><span style={{fontSize:9,color:C.dkG,maxWidth:160,display:"inline-block"}}>{r.obsAMOA}</span> },
-      { label:"Action", render:r=>r.action!=="—"?<Bt small v="ghost">{r.action}</Bt>:<span style={{fontSize:9,color:C.lG}}>—</span> },
-    ]} data={filtered}/>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 4. VALIDATIONS                                                       */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageValidations() {
-  const [tab, setTab] = useState("attente");
-  const tabs = [
-    { k:"attente", l:"En attente", count:VALIDATIONS.filter(v=>v.statut==="En attente").length },
-    { k:"critiques", l:"Critiques", count:VALIDATIONS.filter(v=>v.crit).length },
-    { k:"toutes", l:"Toutes", count:VALIDATIONS.length },
-  ];
-  const list = tab==="attente"?VALIDATIONS.filter(v=>v.statut==="En attente"):tab==="critiques"?VALIDATIONS.filter(v=>v.crit):VALIDATIONS;
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-      <div>
-        <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Centre de décision</div>
-        <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Validations</h2>
-      </div>
-      <TabBar tabs={tabs} active={tab} onChange={setTab}/>
-    </div>
-    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-      {list.map(v => <Cd key={v.id} accent={v.crit?C.err:v.risque==="Élevé"?C.warn:C.sec} style={v.crit?{background:C.errL+"15",border:"1px solid "+C.err+"18"}:{}}>
-        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontFamily:"monospace", fontSize:9, color:C.sec, fontWeight:600 }}>{v.id}</span>
-            <Badge v="dark" s="xs">{v.type}</Badge>
-            <Badge v="dark" s="xs">{v.projet}</Badge>
-            {v.crit && <Badge v="danger" s="xs">⚠ Critique</Badge>}
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <SB s={v.statut}/>
-            {v.pj && <Paperclip size={10} color={C.lG}/>}
-            <span style={{ fontSize:9, color:C.lG }}>Éch. {v.delai}</span>
-          </div>
-        </div>
-        <div style={{ fontSize:12, fontWeight:700, color:C.dk, marginBottom:3 }}>{v.objet}</div>
-        <div style={{ fontSize:10, color:C.g, marginBottom:2 }}>{v.auteur} · {v.date}</div>
-        <div style={{ fontSize:10, color:C.dkG, lineHeight:1.5, padding:"6px 8px", background:C.bgL, borderRadius:5, marginBottom:8 }}>{v.synthese}</div>
-        {v.statut==="En attente" && <div style={{ display:"flex", gap:6 }}>
-          <Bt icon={CheckCircle2}>Valider</Bt>
-          <Bt icon={XCircle} v="danger">Rejeter</Bt>
-          <Bt icon={RotateCcw} v="ghost">Demander correction</Bt>
-          <Bt icon={Flag} v="ghost">Poser réserve</Bt>
-        </div>}
-      </Cd>)}
-    </div>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 5. ÉCARTS & RÉSERVES                                                 */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageEcarts() {
-  const [tab, setTab] = useState("ouverts");
-  const ouverts = ECARTS.filter(e=>e.statut==="Ouvert"||e.statut==="En traitement");
-  const critiques = ECARTS.filter(e=>e.gravite==="Critique"&&e.statut!=="Levée");
-  const leves = ECARTS.filter(e=>e.statut==="Levée");
-
-  const list = tab==="ouverts"?ouverts:tab==="critiques"?critiques:tab==="leves"?leves:ECARTS;
-  const tabs = [
-    { k:"ouverts", l:"Ouverts", count:ouverts.length },
-    { k:"critiques", l:"Critiques", count:critiques.length },
-    { k:"leves", l:"Levées", count:leves.length },
-    { k:"tous", l:"Tous", count:ECARTS.length },
-  ];
-
-  // Stats
-  const parLot = {};
-  ouverts.forEach(e => { const l = e.lot.split("—")[0].trim(); parLot[l] = (parLot[l]||0)+1; });
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-      <div>
-        <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Gouvernance projet</div>
-        <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Écarts & Réserves</h2>
-      </div>
-      <div style={{ display:"flex", gap:6 }}>
-        <TabBar tabs={tabs} active={tab} onChange={setTab}/>
-        <Bt icon={Plus}>Nouveau constat</Bt>
-      </div>
-    </div>
-
-    <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-      <Kpi icon={AlertTriangle} label="Écarts ouverts" value={String(ouverts.length)} color={C.err} accent/>
-      <Kpi icon={AlertOctagon} label="Critiques" value={String(critiques.length)} color={C.err}/>
-      <Kpi icon={CheckCircle2} label="Taux de résolution" value={Math.round(leves.length/ECARTS.length*100)+"%"} color={C.ok}/>
-      <Kpi icon={Clock} label="Délai moyen levée" value="4.2j" color={C.warn}/>
-    </div>
-
-    {/* Résumé par lot */}
-    {tab==="ouverts" && Object.keys(parLot).length>0 && <Cd>
-      <ST>Répartition par lot</ST>
-      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-        {Object.entries(parLot).map(([lot,count]) => <div key={lot} style={{ padding:"6px 12px", borderRadius:6, background:count>=3?C.errL:count>=2?C.warnL:C.bgL, border:"1px solid "+(count>=3?C.err+"20":count>=2?C.warn+"20":C.brd) }}>
-          <div style={{ fontSize:10, fontWeight:700, color:C.dk }}>{lot}</div>
-          <div style={{ fontSize:16, fontWeight:800, color:count>=3?C.err:count>=2?C.warn:C.dk }}>{count}</div>
-          <div style={{ fontSize:9, color:C.g }}>écarts ouverts</div>
-        </div>)}
-      </div>
-    </Cd>}
-
-    {/* Liste détaillée */}
-    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-      {list.map(e => <Cd key={e.id} accent={e.gravite==="Critique"?C.err:e.gravite==="Majeur"?C.warn:C.info} style={e.gravite==="Critique"&&e.statut!=="Levée"?{background:C.errL+"12"}:{}}>
-        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <span style={{ fontFamily:"monospace", fontSize:9, color:C.sec, fontWeight:600 }}>{e.id}</span>
-            <GravBadge g={e.gravite}/>
-            <Badge v="dark" s="xs">{e.type}</Badge>
-            <Badge v="dark" s="xs">{e.projet}</Badge>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <SB s={e.statut}/>
-            {e.relance>0 && <span style={{ fontSize:9, color:C.warn, fontWeight:600 }}>{e.relance} relance(s)</span>}
-          </div>
-        </div>
-        <div style={{ fontSize:10, fontWeight:600, color:C.g, marginBottom:2 }}>{e.lot} · Source : {e.source}</div>
-        <div style={{ fontSize:11, fontWeight:600, color:C.dk, marginBottom:4 }}>{e.constat}</div>
-        <div style={{ display:"flex", gap:12, fontSize:10, color:C.dkG, marginBottom:6 }}>
-          <span><b>Impact :</b> {e.impact}</span>
-          <span><b>Resp. :</b> {e.resp}</span>
-          <span><b>Ouvert :</b> {e.dateOuv}</span>
-          <span><b>Échéance :</b> {e.ech}</span>
-          <span><b>Preuve :</b> {e.preuve}</span>
-        </div>
-        {e.statut!=="Levée" && <div style={{ display:"flex", gap:6 }}>
-          <Bt icon={CheckCircle2} small>Lever</Bt>
-          <Bt icon={Send} small v="ghost">Relancer</Bt>
-          <Bt icon={Flag} small v="ghost">Escalader</Bt>
-        </div>}
-      </Cd>)}
-    </div>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 6. RAPPORTS                                                          */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageRapports() {
-  const [tab, setTab] = useState("avalider");
-  const tabs = [
-    { k:"avalider", l:"À valider", count:RAPPORTS.filter(r=>r.statut==="À valider").length },
-    { k:"acorriger", l:"À corriger", count:RAPPORTS.filter(r=>r.statut==="À corriger").length },
-    { k:"valides", l:"Validés", count:RAPPORTS.filter(r=>r.statut==="Validé").length },
-    { k:"tous", l:"Tous", count:RAPPORTS.length },
-  ];
-  const list = tab==="avalider"?RAPPORTS.filter(r=>r.statut==="À valider"):tab==="acorriger"?RAPPORTS.filter(r=>r.statut==="À corriger"):tab==="valides"?RAPPORTS.filter(r=>r.statut==="Validé"):RAPPORTS;
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-      <div>
-        <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Contrôle & publication</div>
-        <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Rapports</h2>
-      </div>
-      <div style={{ display:"flex", gap:6 }}>
-        <TabBar tabs={tabs} active={tab} onChange={setTab}/>
-        <Bt icon={Plus}>Rapport visite</Bt>
-      </div>
-    </div>
-    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-      {list.map(r => <Cd key={r.id} accent={r.sensible?C.err:r.statut==="À valider"?C.warn:r.statut==="Validé"?C.ok:C.info}>
-        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <span style={{ fontFamily:"monospace", fontSize:9, color:C.sec, fontWeight:600 }}>{r.id}</span>
-            <Badge v={r.type.includes("Visite")?"active":"default"} s="xs">{r.type}</Badge>
-            <Badge v="dark" s="xs">{r.projet}</Badge>
-            {r.sensible && <Badge v="danger" s="xs">Sensible</Badge>}
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <SB s={r.statut}/>
-            {r.transmissible && <Badge v="success" s="xs">Publiable client</Badge>}
-          </div>
-        </div>
-        <div style={{ display:"flex", gap:12, fontSize:10, marginBottom:4 }}>
-          <span style={{ color:C.g }}>📅 {r.date}</span>
-          <span style={{ color:C.g }}>👤 {r.auteur} ({r.role})</span>
-          <span style={{ color:C.g }}>☁️ {r.meteo}</span>
-          <span style={{ color:C.g }}>🏗️ {r.lot}</span>
-          {r.ecarts>0 && <span style={{ color:C.err, fontWeight:600 }}>⚠ {r.ecarts} écart(s)</span>}
-        </div>
-        <div style={{ fontSize:11, color:C.dk, padding:"6px 8px", background:C.bgL, borderRadius:5, marginBottom:6 }}>{r.resume}</div>
-        {r.statut==="À valider" && <div style={{ display:"flex", gap:6 }}>
-          <Bt icon={CheckCircle2} small>Valider</Bt>
-          <Bt icon={RotateCcw} small v="ghost">Renvoyer avec commentaire</Bt>
-          <Bt icon={Send} small v="ghost">Valider & publier client</Bt>
-        </div>}
-        {r.statut==="À corriger" && <div style={{ display:"flex", gap:6 }}>
-          <Bt icon={RotateCcw} small v="ghost">Relancer correction</Bt>
-        </div>}
-      </Cd>)}
-    </div>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 7. GED                                                               */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageGED() {
-  const [tab, setTab] = useState("tous");
-  const tabs = [
-    { k:"tous", l:"Tous", count:DOCS.length },
-    { k:"avalider", l:"À valider", count:DOCS.filter(d=>d.statut==="À valider"||d.statut==="En revue").length },
-    { k:"manquants", l:"Manquants", count:DOCS.filter(d=>d.statut==="Manquant").length },
-    { k:"preuves", l:"Preuves", count:DOCS.filter(d=>d.cat==="Preuves").length },
-  ];
-  const list = tab==="tous"?DOCS:tab==="avalider"?DOCS.filter(d=>d.statut==="À valider"||d.statut==="En revue"):tab==="manquants"?DOCS.filter(d=>d.statut==="Manquant"):DOCS.filter(d=>d.cat==="Preuves");
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-      <div>
-        <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Contrôle documentaire</div>
-        <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>GED</h2>
-      </div>
-      <div style={{ display:"flex", gap:6 }}>
-        <TabBar tabs={tabs} active={tab} onChange={setTab}/>
-        <Bt icon={Upload}>Téléverser</Bt>
-      </div>
-    </div>
-    <Tbl cols={[
-      { label:"Réf.", render:r=><span style={{fontFamily:"monospace",fontSize:9,color:C.sec}}>{r.id}</span> },
-      { label:"Document", render:r=><div><div style={{fontWeight:600,fontSize:11}}>{r.nom}</div></div> },
-      { label:"Catégorie", render:r=><Badge v="dark" s="xs">{r.cat}</Badge> },
-      { label:"Projet", key:"projet" },
-      { label:"Ver.", key:"version" },
-      { label:"Date", key:"date" },
-      { label:"Auteur", key:"auteur" },
-      { label:"Statut", render:r=><SB s={r.statut}/> },
-      { label:"Client", render:r=>r.client?<Badge v="success" s="xs">Visible</Badge>:<Badge v="dark" s="xs">Interne</Badge> },
-      { label:"Lié à", render:r=>r.lien!=="—"?<span style={{fontFamily:"monospace",fontSize:9,color:C.info}}>{r.lien}</span>:<span style={{color:C.lG}}>—</span> },
-    ]} data={list.map(d=>({...d,_highlight:d.statut==="Manquant"}))}/>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 8. VIDÉOSURVEILLANCE                                                 */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageVideo() {
-  const [selCam, setSelCam] = useState(0);
-  const cam = CAMS[selCam];
-  const on = cam.s==="En ligne";
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div>
-      <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Contrôle visuel</div>
-      <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Vidéosurveillance</h2>
-      <div style={{ fontSize:10, color:C.g }}>Objectiver · Corroborer · Lever le doute</div>
-    </div>
-    <div style={{ display:"grid", gridTemplateColumns:"1fr 260px", gap:12 }}>
-      <div>
-        <Cd>
-          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-            <div><span style={{ fontWeight:700, fontSize:12, color:C.dk }}>{cam.nom}</span> <Badge v="dark" s="xs">{cam.projet}</Badge> <Badge v="dark" s="xs">{cam.zone}</Badge></div>
-            <SB s={cam.s}/>
-          </div>
-          <div style={{ width:"100%", aspectRatio:"16/9", borderRadius:8, background:on?"linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)":"#1a1a2e", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", color:"#fff" }}>
-            {on ? <>
-              <div style={{ position:"absolute", top:8, left:10, display:"flex", alignItems:"center", gap:4 }}><div style={{ width:6, height:6, borderRadius:"50%", background:C.err, animation:"blink 1.5s infinite" }}/><span style={{ fontSize:9, fontWeight:700 }}>LIVE</span></div>
-              <Camera size={40} strokeWidth={1} color="rgba(255,255,255,0.12)"/>
-              <div style={{ position:"absolute", bottom:8, left:10, fontSize:9, color:"rgba(255,255,255,0.4)" }}>{cam.id} · {cam.zone}</div>
-              <div style={{ position:"absolute", bottom:8, right:10, fontSize:9, color:"rgba(255,255,255,0.4)" }}>16/04/2026 09:47:32</div>
-            </> : <div style={{ textAlign:"center" }}><X size={32} color={C.err}/><div style={{ fontSize:10, color:C.lG, marginTop:6 }}>Flux indisponible</div></div>}
-          </div>
-          {cam.lienEc!=="—" && <div style={{ marginTop:8, padding:"6px 10px", borderRadius:5, background:C.warnL, border:"1px solid "+C.warn+"20", fontSize:10 }}>
-            <b>Lié à écart :</b> <span style={{ fontFamily:"monospace", color:C.info }}>{cam.lienEc}</span> — Observation AMOA rattachée à cette vue.
-          </div>}
-        </Cd>
-        <div style={{ marginTop:8, display:"flex", gap:6 }}>
-          <Bt icon={Camera} v="ghost" small>Capturer</Bt>
-          <Bt icon={Flag} v="ghost" small>Rattacher à un écart</Bt>
-          <Bt icon={FileText} v="ghost" small>Créer observation AMOA</Bt>
-        </div>
-      </div>
-      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        <span style={{ fontSize:11, fontWeight:700, color:C.dk }}>Caméras ({CAMS.length})</span>
-        {CAMS.map((c,i) => <div key={i} onClick={()=>setSelCam(i)} style={{ padding:"8px 10px", borderRadius:7, border:"1px solid "+(i===selCam?C.sec:C.brd), background:i===selCam?C.secL+"40":C.w, cursor:"pointer", transition:"all 0.15s" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <span style={{ fontSize:10, fontWeight:600, color:C.dk }}>{c.nom}</span>
-            <div style={{ width:7, height:7, borderRadius:"50%", background:c.s==="En ligne"?C.ok:C.err }}/>
-          </div>
-          <div style={{ fontSize:8, color:C.lG, marginTop:2 }}>{c.projet} · {c.zone}</div>
-          <div style={{ fontSize:8, color:C.g, marginTop:1 }}>{c.evt}</div>
-          {c.lienEc!=="—" && <div style={{ fontSize:8, color:C.warn, marginTop:1 }}>⚠ Lié : {c.lienEc}</div>}
-        </div>)}
-      </div>
-    </div>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 9. MESSAGERIE                                                        */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageMsg() {
-  const [sel, setSel] = useState(0);
-  const conv = MESSAGES[sel];
-  const roleColors = { SPOC:C.pri, MOE:C.purp, MOEX:C.warn, AMOA:C.sec, Client:C.info };
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div>
-      <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Coordination & observation</div>
-      <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>Messagerie</h2>
-    </div>
-    <div style={{ display:"grid", gridTemplateColumns:"280px 1fr", gap:0, border:"1px solid "+C.brd, borderRadius:10, overflow:"hidden", minHeight:420 }}>
-      <div style={{ borderRight:"1px solid "+C.brd, overflowY:"auto", background:C.w }}>
-        {MESSAGES.map((m,i) => <div key={i} onClick={()=>setSel(i)} style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"10px 12px", borderBottom:"1px solid "+C.brd, cursor:"pointer", background:i===sel?C.sec+"08":"transparent" }}>
-          <div style={{ width:28, height:28, borderRadius:"50%", background:(roleColors[m.role]||C.g)+"14", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:roleColors[m.role]||C.g, flexShrink:0 }}>{m.from[0]}</div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <span style={{ fontSize:10, fontWeight:600, color:C.dk }}>{m.from}</span>
-              <Badge v="dark" s="xs">{m.role}</Badge>
-            </div>
-            <div style={{ fontSize:9, fontWeight:600, color:C.dkG, marginTop:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{m.sujet}</div>
-            <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:2 }}>
-              <Badge v="dark" s="xs">{m.projet}</Badge>
-              {m.prio==="Haute" && <Badge v="danger" s="xs">Haute</Badge>}
-              {m.attente && <Badge v="warning" s="xs">Réponse att.</Badge>}
-            </div>
-          </div>
-        </div>)}
-      </div>
-      <div style={{ display:"flex", flexDirection:"column", background:C.bgL }}>
-        <div style={{ padding:"10px 14px", borderBottom:"1px solid "+C.brd, background:C.w }}>
-          <div style={{ display:"flex", justifyContent:"space-between" }}>
             <div>
-              <span style={{ fontWeight:700, fontSize:12, color:C.dk }}>{conv.sujet}</span>
-              <div style={{ fontSize:9, color:C.g, marginTop:1 }}>{conv.from} · {conv.role} · {conv.projet} {conv.lien!=="—" && <span>· Lié : <span style={{fontFamily:"monospace",color:C.info}}>{conv.lien}</span></span>}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Synthèse IA — Administration</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>Analyse automatique · 18/04/2026 09:00</div>
             </div>
-            {conv.attente && <Badge v="warning">Réponse attendue</Badge>}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { icon: CheckCircle2, text: "Le projet PRJ-001 progresse conformément au planning. Prochain jalon : plancher R+1 le 25/04.", color: C.success },
+              { icon: AlertTriangle, text: "Le prospect Cécile Ngono (P-2026-004) est sans contact depuis 10 jours. Relance recommandée sous 48h.", color: C.warning },
+              { icon: AlertCircle, text: "Arc. Njoya (MOE) présente un score d'adoption de 45%. Recommandation : session d'onboarding GED + Planning.", color: C.warning },
+              { icon: TrendingDown, text: "Le taux de conversion prospects a baissé de 5% ce mois. Analyse : 2 leads mal qualifiés (source réseaux sociaux).", color: C.danger },
+              { icon: ShieldCheck, text: "Conformité d'exploitation : 94% des rapports chantier soumis dans les délais (<24h). Objectif atteint.", color: C.success },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <item.icon size={14} color={item.color} style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.85)", lineHeight: 1.5 }}>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Row 5: Santé plateforme */}
+      <Card title="Santé de la plateforme">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14 }}>
+          {[
+            { label: "Disponibilité API", value: "99.8%", status: "success" },
+            { label: "Sync Odoo", value: "OK", status: "success" },
+            { label: "Caméras actives", value: "3/4", status: "warning" },
+            { label: "Rapports < 24h", value: "94%", status: "success" },
+            { label: "Onboarding complet", value: "60%", status: "warning" },
+          ].map((item, i) => (
+            <div key={i} style={{ textAlign: "center", padding: "12px 8px", borderRadius: 8, background: C.bg }}>
+              <Dot color={item.status === "success" ? C.success : item.status === "warning" ? C.warning : C.danger} />
+              <div style={{ fontSize: 18, fontWeight: 800, color: C.dark, marginTop: 6 }}>{item.value}</div>
+              <div style={{ fontSize: 10, color: C.gray, marginTop: 2 }}>{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 2. UTILISATEURS — Centre de gestion avancé
+// ═══════════════════════════════════════════════════════════════
+
+const AdminUsersPage = () => {
+  const [tab, setTab] = useState("tous");
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const filtered = useMemo(() => {
+    if (tab === "tous") return ADMIN_USERS;
+    if (tab === "arisque") return ADMIN_USERS.filter(u => u.scoreAdoption < 60 || u.incidents > 0 || u.statut === "Inactif");
+    if (tab === "onboarding") return ADMIN_USERS.filter(u => ["Invité", "En onboarding"].includes(u.statutOnboarding));
+    return ADMIN_USERS.filter(u => u.role.toLowerCase() === tab);
+  }, [tab]);
+
+  const UserDetail = ({ user }) => (
+    <div style={{ position: "fixed", top: 0, right: 0, width: 480, height: "100vh", background: "#fff", borderLeft: `1px solid ${C.border}`, zIndex: 100, overflowY: "auto", boxShadow: "-4px 0 20px rgba(0,0,0,0.08)" }}>
+      <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: C.bg }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: C.dark }}>Fiche utilisateur</span>
+        <button onClick={() => setSelectedUser(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={18} color={C.gray} /></button>
+      </div>
+      <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 18 }}>
+        {/* Identity */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <Avatar name={user.nom} role={user.role} size={48} />
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.dark }}>{user.nom}</div>
+            <div style={{ fontSize: 12, color: C.gray }}>{user.email}</div>
+            <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+              <RoleBadge role={user.role} />
+              <StatusBadge statut={user.statut} />
+            </div>
           </div>
         </div>
-        <div style={{ flex:1, padding:12, display:"flex", flexDirection:"column", justifyContent:"flex-end", gap:6, overflowY:"auto" }}>
-          {conv.msgs.map((m,i) => {
-            const isMine = m.role==="AMOA";
-            return <div key={i} style={{ alignSelf:isMine?"flex-end":"flex-start", maxWidth:"75%" }}>
-              <div style={{ fontSize:8, color:C.lG, marginBottom:2, textAlign:isMine?"right":"left" }}>{m.auteur} · {m.time}</div>
-              <div style={{ background:isMine?C.sec:C.w, padding:"8px 11px", borderRadius:isMine?"10px 3px 10px 10px":"3px 10px 10px 10px", fontSize:11, color:isMine?"#fff":C.dk, border:isMine?"none":"1px solid "+C.brd, lineHeight:1.5 }}>{m.txt}</div>
-            </div>;
-          })}
-        </div>
-        <div style={{ padding:"8px 12px", borderTop:"1px solid "+C.brd, background:C.w, display:"flex", gap:6 }}>
-          <input placeholder="Message..." style={{ flex:1, padding:"6px 10px", borderRadius:6, border:"1px solid "+C.brd, fontSize:10, outline:"none" }}/>
-          <Bt icon={Send}>Envoyer</Bt>
-        </div>
-      </div>
-    </div>
-  </div>;
-}
 
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 10. KPI & ANALYTICS                                                  */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageKPI() {
-  const kpis = [
-    { icon:CheckCircle2, label:"Validations dans les délais", value:"78%", color:C.ok, trend:5 },
-    { icon:AlertTriangle, label:"Écarts ouverts / fermés", value:"6 / 2", color:C.err },
-    { icon:Clock, label:"Délai moyen de levée", value:"4.2j", color:C.warn, trend:-8 },
-    { icon:Shield, label:"Conformité moyenne", value:"81%", color:C.sec },
-    { icon:FileCheck, label:"Rapports traités / mois", value:"24", color:C.info, trend:12 },
-    { icon:BarChart3, label:"Ratio validés / corrigés", value:"3.5:1", color:C.ok },
-  ];
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div>
-      <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Performance AMOA</div>
-      <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>KPI & Analytics</h2>
-    </div>
-    <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-      {kpis.map((k,i) => <Kpi key={i} {...k} accent/>)}
-    </div>
-
-    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-      <Cd>
-        <ST>Conformité par projet</ST>
-        {PROJECTS.map(p => <div key={p.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 0", borderBottom:"1px solid "+C.brd }}>
-          <span style={{ fontSize:10, fontWeight:600, color:C.dk, minWidth:100 }}>{p.nom}</span>
-          <div style={{ flex:1 }}><Pr value={p.conformite} h={6}/></div>
-          <span style={{ fontSize:10, fontWeight:700, color:p.conformite>=85?C.ok:p.conformite>=70?C.warn:C.err, minWidth:30, textAlign:"right" }}>{p.conformite}%</span>
-        </div>)}
-      </Cd>
-      <Cd>
-        <ST>Lots les plus sensibles</ST>
-        {[
-          { lot:"LOT II — Gros Œuvre", ecarts:4, res:2, score:85 },
-          { lot:"LOT III — Clos Couvert", ecarts:1, res:1, score:45 },
-          { lot:"LOT I — Travaux Prép.", ecarts:1, res:0, score:30 },
-          { lot:"LOT IV — Second Œuvre", ecarts:1, res:0, score:15 },
-        ].map((l,i) => <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:"1px solid "+C.brd }}>
-          <span style={{ fontSize:10, fontWeight:600, color:C.dk, flex:1 }}>{l.lot}</span>
-          <Badge v={l.ecarts>=3?"danger":l.ecarts>=1?"warning":"success"} s="xs">{l.ecarts} éc.</Badge>
-          <Badge v={l.res>=2?"danger":l.res>=1?"warning":"success"} s="xs">{l.res} rés.</Badge>
-          <div style={{ width:40 }}><Pr value={l.score} h={3}/></div>
-        </div>)}
-      </Cd>
-    </div>
-
-    <Cd>
-      <ST>Partenaires — Indice de fiabilité</ST>
-      <div style={{ display:"flex", gap:8 }}>
-        {[
-          { nom:"BTP Cameroun", fiab:72, ecarts:3, delai:"3.8j" },
-          { nom:"Arc. Njoya", fiab:91, ecarts:0, delai:"—" },
-          { nom:"Bati-Plus", fiab:42, ecarts:6, delai:"5.1j" },
-          { nom:"BET Structure", fiab:78, ecarts:1, delai:"4.0j" },
-        ].map((p,i) => <div key={i} style={{ flex:1, padding:10, borderRadius:8, background:p.fiab>=80?C.okL+"40":p.fiab>=60?C.warnL+"40":C.errL+"40", border:"1px solid "+(p.fiab>=80?C.ok+"20":p.fiab>=60?C.warn+"20":C.err+"20"), textAlign:"center" }}>
-          <div style={{ fontSize:11, fontWeight:700, color:C.dk }}>{p.nom}</div>
-          <div style={{ fontSize:22, fontWeight:800, color:p.fiab>=80?C.ok:p.fiab>=60?C.warn:C.err, margin:"4px 0" }}>{p.fiab}</div>
-          <div style={{ fontSize:9, color:C.g }}>{p.ecarts} écarts · Délai moy. {p.delai}</div>
-        </div>)}
-      </div>
-    </Cd>
-
-    <Cd>
-      <ST>Multi-projets : comparaison</ST>
-      <Tbl compact cols={[
-        { label:"Projet", render:r=><span style={{fontWeight:600}}>{r.nom}</span> },
-        { label:"Conform.", render:r=><span style={{fontWeight:700,color:r.conformite>=85?C.ok:r.conformite>=70?C.warn:C.err}}>{r.conformite}%</span> },
-        { label:"Écarts", render:r=><span style={{fontWeight:700}}>{r.ecartsOuv}</span> },
-        { label:"Réserves", render:r=><span style={{fontWeight:700}}>{r.reservesOuv}</span> },
-        { label:"Valid. att.", render:r=><span>{r.validAttente}</span> },
-        { label:"Risque", render:r=><Badge v={r.risque==="Élevé"?"danger":r.risque==="Modéré"?"warning":"success"} s="xs">{r.risque}</Badge> },
-        { label:"Maîtrise", render:r=><TempBadge t={r.tempCtrl}/> },
-      ]} data={PROJECTS}/>
-    </Cd>
-  </div>;
-}
-
-/* ══════════════════════════════════════════════════════════════════════ */
-/* 11. IA KOMA — AMOA                                                   */
-/* ══════════════════════════════════════════════════════════════════════ */
-function PageIA() {
-  const insights = [
-    { type:"critical", txt:"3 validations critiques en attente sur PRJ-004. Ferraillage et verticalité à traiter en priorité. Risque d'immobilisation chantier si non résolu sous 48h." },
-    { type:"pattern", txt:"Écart récurrent détecté sur lot Gros Œuvre (PRJ-004) : ferraillage, alignement, verticalité. Recommandation : audit structurel complet du prestataire Bati-Plus." },
-    { type:"warning", txt:"Risque de dérive documentaire sur PRJ-001 : note de calcul structure (LIV-003) incomplète depuis 3 jours. Pas de note sismique. Demander complément au BET." },
-    { type:"corroboration", txt:"Les constats vidéo (CAM-006) et le rapport de visite RV-15 du 15/04 sur PRJ-004 semblent cohérents : activité réduite confirmée. Mais le rapport journalier RJ-14 mentionne un 'arrêt pluie' alors que la météo indiquait 'nuageux' — incohérence à vérifier." },
-    { type:"positive", txt:"PRJ-006 (Étude Kribi) : avancement à 60%, supérieur au planifié (55%). Rapport de faisabilité validé. Prochaine étape : commande G2 AVP." },
-  ];
-  const typeConf = { critical:{c:C.err,l:"Alerte critique",i:AlertOctagon}, pattern:{c:C.warn,l:"Pattern détecté",i:GitBranch}, warning:{c:C.warn,l:"Attention",i:AlertTriangle}, corroboration:{c:C.info,l:"Corroboration",i:ScanEye}, positive:{c:C.ok,l:"Point positif",i:CheckCircle2} };
-
-  return <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-    <div>
-      <div style={{ fontSize:10, color:C.sec, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Assistant de contrôle</div>
-      <h2 style={{ fontSize:20, fontWeight:800, color:C.dk, margin:"2px 0 0" }}>IA KOMA — AMOA</h2>
-    </div>
-
-    {/* Synthèse IA */}
-    <Cd style={{ background:"linear-gradient(135deg, "+C.sec+"08, "+C.pri+"06)", border:"1px solid "+C.sec+"20" }}>
-      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-        <Brain size={16} color={C.sec}/>
-        <span style={{ fontSize:13, fontWeight:700, color:C.dk }}>Synthèse IA du jour — 16 avril 2026</span>
-      </div>
-      <div style={{ fontSize:11, color:C.dkG, lineHeight:1.7 }}>
-        <b>4 projets suivis · 6 validations en attente · 6 écarts ouverts dont 2 critiques.</b><br/>
-        Priorité absolue : PRJ-004 (Reprise Bali) concentre 80% des risques actifs. Conformité à 58%, très en-dessous du seuil (85%). 
-        PRJ-001 est stable mais nécessite validation du rapport RJ-16 et suivi de la note de calcul incomplète.
-        PRJ-002 et PRJ-006 sont sous contrôle, sans alerte.
-      </div>
-    </Cd>
-
-    {/* Insights */}
-    <ST>Insights & détections</ST>
-    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-      {insights.map((ins,i) => {
-        const cfg = typeConf[ins.type];
-        return <Cd key={i} accent={cfg.c} style={{ background:cfg.c+"06" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-            <cfg.i size={12} color={cfg.c}/>
-            <Badge v={ins.type==="critical"?"danger":ins.type==="positive"?"success":"warning"} s="xs">{cfg.l}</Badge>
+        {/* Qualification */}
+        <div style={{ background: C.bg, borderRadius: 10, padding: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.dark, marginBottom: 10 }}>Qualification & Habilitation</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div><span style={{ fontSize: 10, color: C.gray }}>Onboarding</span><div style={{ fontSize: 12, fontWeight: 600, marginTop: 2 }}><StatusBadge statut={user.statutOnboarding} /></div></div>
+            <div><span style={{ fontSize: 10, color: C.gray }}>Maturité</span><div style={{ fontSize: 12, fontWeight: 600, marginTop: 2 }}><MaturiteBadge level={user.maturite} /></div></div>
+            <div><span style={{ fontSize: 10, color: C.gray }}>Score adoption</span><div style={{ marginTop: 4 }}><ScoreBar value={user.scoreAdoption} showLabel /></div></div>
+            <div><span style={{ fontSize: 10, color: C.gray }}>Projets affectés</span><div style={{ fontSize: 14, fontWeight: 700, color: C.dark, marginTop: 2 }}>{user.projets}</div></div>
           </div>
-          <div style={{ fontSize:11, color:C.dkG, lineHeight:1.6 }}>{ins.txt}</div>
-        </Cd>;
-      })}
-    </div>
+        </div>
 
-    {/* Modules IA */}
-    <ST>Modules IA disponibles</ST>
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
-      {[
-        { t:"Synthèse auto du jour", d:"Résumé consolidé de tous les projets", i:FileText },
-        { t:"Détection écarts récurrents", d:"Patterns par lot, partenaire, type", i:GitBranch },
-        { t:"Résumé de rapports", d:"Extraction des points clés et anomalies", i:BookOpen },
-        { t:"Aide rédaction réserve", d:"Formulation structurée d'un constat", i:ClipboardCheck },
-        { t:"Pré-analyse conformité", d:"Check automatique vs référentiel WeCare", i:Shield },
-        { t:"Détection contradictions", d:"Croisement rapports, vidéo, planning", i:ScanEye },
-        { t:"Préparation visite AMOA", d:"Checklist et points de vigilance", i:Eye },
-        { t:"Synthèse avant comité", d:"Brief structuré pour réunion projet", i:Target },
-        { t:"Priorisation validations", d:"Tri intelligent par urgence et risque", i:Gauge },
-      ].map((c,i) => <Cd key={i} style={{ cursor:"pointer" }}>
-        <div style={{ width:28, height:28, borderRadius:7, background:C.sec+"14", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:6 }}><c.i size={13} color={C.sec}/></div>
-        <div style={{ fontSize:11, fontWeight:700, color:C.dk }}>{c.t}</div>
-        <div style={{ fontSize:10, color:C.g, marginTop:2 }}>{c.d}</div>
-      </Cd>)}
-    </div>
-  </div>;
-}
+        {/* Habilitations */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.dark, marginBottom: 8 }}>Modules autorisés</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {user.habilitations.length > 0 ? user.habilitations.map((h, i) => <Badge key={i} variant="success" size="xs">{h}</Badge>) : <span style={{ fontSize: 11, color: C.lightGray }}>Aucun module attribué</span>}
+          </div>
+        </div>
 
-/* ══════════════════════════════════════════════════════════════════════ */
-/* NAVIGATION                                                           */
-/* ══════════════════════════════════════════════════════════════════════ */
+        {user.modulesArenforcer.length > 0 && (
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.warning, marginBottom: 8 }}>Modules à renforcer</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {user.modulesArenforcer.map((m, i) => <Badge key={i} variant="warning" size="xs">{m}</Badge>)}
+            </div>
+          </div>
+        )}
+
+        {/* Activity stats */}
+        <div style={{ background: C.bg, borderRadius: 10, padding: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.dark, marginBottom: 10 }}>Activité récente</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, textAlign: "center" }}>
+            <div><div style={{ fontSize: 18, fontWeight: 800, color: C.dark }}>{user.actionsRecentes}</div><div style={{ fontSize: 10, color: C.gray }}>Actions (7j)</div></div>
+            <div><div style={{ fontSize: 18, fontWeight: 800, color: user.incidents > 0 ? C.danger : C.success }}>{user.incidents}</div><div style={{ fontSize: 10, color: C.gray }}>Incidents</div></div>
+            <div><div style={{ fontSize: 10, fontFamily: "monospace", color: C.gray, marginTop: 4 }}>{user.derniereConnexion}</div><div style={{ fontSize: 10, color: C.gray }}>Dern. connexion</div></div>
+          </div>
+        </div>
+
+        {/* Actions admin */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.dark, marginBottom: 8 }}>Actions administrateur</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <Btn icon={Edit} variant="secondary" size="xs">Modifier rôle</Btn>
+            <Btn icon={Building2} variant="secondary" size="xs">Affecter projet</Btn>
+            <Btn icon={GraduationCap} variant="secondary" size="xs">Lancer onboarding</Btn>
+            <Btn icon={RefreshCw} variant="secondary" size="xs">Réinit. mot de passe</Btn>
+            <Btn icon={Lock} variant="secondary" size="xs">Modifier habilitations</Btn>
+            {user.statut === "Actif" ? (
+              <Btn icon={UserX} variant="danger" size="xs">Suspendre</Btn>
+            ) : (
+              <Btn icon={Unlock} variant="outline" size="xs">Réactiver</Btn>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>Gestion des Utilisateurs</h2>
+          <p style={{ fontSize: 12, color: C.gray, margin: "3px 0 0" }}>Administration, qualification et habilitation des comptes</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Btn icon={Download} variant="secondary">Export</Btn>
+          <Btn icon={Plus}>Nouvel utilisateur</Btn>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10 }}>
+        <KPICard icon={Users} label="Utilisateurs actifs" value="8" sub="sur 10 comptes" color={C.primary} />
+        <KPICard icon={Users} label="SPOC" value="2" color={C.primary} />
+        <KPICard icon={Briefcase} label="AMOA" value="2" color={C.secondary} />
+        <KPICard icon={HardHat} label="MOE / MOEX" value="2" sub="1 MOE + 1 MOEX" color={C.purple} />
+        <KPICard icon={Home} label="Clients" value="3" color={C.info} />
+        <KPICard icon={AlertTriangle} label="À surveiller" value="4" sub="Adoption < 60% ou incidents" color={C.danger} accent={C.danger} />
+      </div>
+
+      {/* Onboarding funnel */}
+      <Card title="Entonnoir d'onboarding">
+        <div style={{ display: "flex", gap: 0, alignItems: "stretch" }}>
+          {[
+            { label: "Invité", count: 1, color: C.lightGray },
+            { label: "En onboarding", count: 2, color: C.info },
+            { label: "Qualifié", count: 2, color: C.primary },
+            { label: "Opérationnel", count: 3, color: C.success },
+            { label: "Suspendu", count: 1, color: C.danger },
+          ].map((step, i) => (
+            <div key={i} style={{ flex: 1, textAlign: "center", padding: "12px 6px", position: "relative", background: `${step.color}08` }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: step.color }}>{step.count}</div>
+              <div style={{ fontSize: 10, color: C.gray, marginTop: 2 }}>{step.label}</div>
+              {i < 4 && <ChevronRight size={16} color={C.faintGray} style={{ position: "absolute", right: -8, top: "50%", transform: "translateY(-50%)", zIndex: 1 }} />}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Tabs + Table */}
+      <TabBar tabs={[
+        { key: "tous", label: "Tous", count: ADMIN_USERS.length },
+        { key: "arisque", label: "À surveiller", count: ADMIN_USERS.filter(u => u.scoreAdoption < 60 || u.incidents > 0 || u.statut === "Inactif").length },
+        { key: "onboarding", label: "Onboarding", count: ADMIN_USERS.filter(u => ["Invité", "En onboarding"].includes(u.statutOnboarding)).length },
+        { key: "spoc", label: "SPOC", count: ADMIN_USERS.filter(u => u.role === "SPOC").length },
+        { key: "amoa", label: "AMOA", count: ADMIN_USERS.filter(u => u.role === "AMOA").length },
+        { key: "moe", label: "MOE", count: ADMIN_USERS.filter(u => u.role === "MOE").length },
+        { key: "moex", label: "MOEX", count: ADMIN_USERS.filter(u => u.role === "MOEX").length },
+        { key: "client", label: "Clients", count: ADMIN_USERS.filter(u => u.role === "Client").length },
+      ]} active={tab} onChange={setTab} />
+
+      <Card noPad>
+        <MiniTable columns={[
+          { key: "nom", label: "Utilisateur", render: r => (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setSelectedUser(r)}>
+              <Avatar name={r.nom} role={r.role} size={30} />
+              <div>
+                <div style={{ fontWeight: 600, color: C.dark, fontSize: 12 }}>{r.nom}</div>
+                <div style={{ fontSize: 10, color: C.gray }}>{r.email}</div>
+              </div>
+            </div>
+          )},
+          { key: "role", label: "Rôle", render: r => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <RoleBadge role={r.role} />
+              {r.rolesSecondaires.length > 0 && <span style={{ fontSize: 9, color: C.lightGray }}>+{r.rolesSecondaires.join(", ")}</span>}
+            </div>
+          )},
+          { key: "projets", label: "Projets", render: r => <span style={{ fontWeight: 600 }}>{r.projets}</span> },
+          { key: "statut", label: "Compte", render: r => <StatusBadge statut={r.statut} /> },
+          { key: "statutOnboarding", label: "Onboarding", render: r => <StatusBadge statut={r.statutOnboarding} /> },
+          { key: "maturite", label: "Maturité", render: r => <MaturiteBadge level={r.maturite} /> },
+          { key: "scoreAdoption", label: "Adoption", render: r => <ScoreBar value={r.scoreAdoption} showLabel /> },
+          { key: "incidents", label: "Incidents", render: r => r.incidents > 0 ? <Badge variant="danger" size="xs">{r.incidents}</Badge> : <span style={{ color: C.lightGray }}>0</span> },
+          { key: "derniereConnexion", label: "Dern. connexion", render: r => <span style={{ fontSize: 10, fontFamily: "monospace", color: C.gray }}>{r.derniereConnexion}</span> },
+          { key: "actions", label: "", render: r => (
+            <div style={{ display: "flex", gap: 4 }}>
+              <button onClick={() => setSelectedUser(r)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}><Eye size={14} color={C.gray} /></button>
+              <button style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}><Edit size={14} color={C.gray} /></button>
+              <button style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}><Lock size={14} color={C.gray} /></button>
+            </div>
+          )},
+        ]} data={filtered} />
+      </Card>
+
+      {selectedUser && <UserDetail user={selectedUser} />}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 3. PROSPECTS / CRM ADMIN
+// ═══════════════════════════════════════════════════════════════
+
+const AdminProspectsPage = () => {
+  const [view, setView] = useState("liste");
+
+  const KanbanColumn = ({ title, prospects, color }) => (
+    <div style={{ flex: 1, minWidth: 220 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "0 4px" }}>
+        <Dot color={color} size={8} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>{title}</span>
+        <Badge variant="dark" size="xs">{prospects.length}</Badge>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {prospects.map((p, i) => (
+          <div key={i} style={{ background: "#fff", borderRadius: 10, padding: 12, border: `1px solid ${C.border}`, borderLeft: `3px solid ${color}` }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>{p.nom}</div>
+            <div style={{ fontSize: 10, color: C.gray, marginTop: 2 }}>{p.type} · {p.bien} · {p.region}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: C.dark }}>{p.budget}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <Star size={10} color={C.warning} fill={p.score >= 80 ? C.warning : "none"} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: p.score >= 80 ? C.success : p.score >= 50 ? C.warning : C.danger }}>{p.score}</span>
+              </div>
+            </div>
+            <div style={{ fontSize: 10, color: C.lightGray, marginTop: 6 }}>SPOC: {p.spoc} · {p.delaiSansContact > 7 ? <span style={{ color: C.danger }}>{p.delaiSansContact}j sans contact</span> : `${p.delaiSansContact}j`}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>CRM — Vue Admin consolidée</h2>
+          <p style={{ fontSize: 12, color: C.gray, margin: "3px 0 0" }}>Pipeline commercial, affectations et qualité de qualification</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Btn variant={view === "liste" ? "primary" : "secondary"} size="xs" onClick={() => setView("liste")}>Liste</Btn>
+          <Btn variant={view === "kanban" ? "primary" : "secondary"} size="xs" onClick={() => setView("kanban")}>Kanban</Btn>
+          <Btn variant={view === "stats" ? "primary" : "secondary"} size="xs" onClick={() => setView("stats")}>Stats</Btn>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 10 }}>
+        <KPICard icon={Users} label="Total prospects" value="7" trend={22} />
+        <KPICard icon={Target} label="Taux conversion" value="14%" sub="1 converti / 7" color={C.warning} />
+        <KPICard icon={DollarSign} label="Pipeline total" value="578M" sub="FCFA" color={C.success} />
+        <KPICard icon={Clock} label="Cycle moyen" value="18j" sub="formulaire → conversion" color={C.info} />
+        <KPICard icon={AlertTriangle} label="Leads stagnants" value="2" sub="> 7 jours sans contact" color={C.danger} accent={C.danger} />
+        <KPICard icon={FileWarning} label="Qualité remplissage" value="76%" sub="Moyenne fiches" color={C.purple} />
+      </div>
+
+      {/* Anomalies CRM */}
+      <Card title="Anomalies CRM" action={<Badge variant="warning" size="xs">3 détectées</Badge>}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          <AlertRow icon={UserX} text="Prospect Franck Mbarga (P-2026-005) — pas de SPOC affecté" sub="Source : Réseaux sociaux · Qualité remplissage : 45%" severity="critical" time="15/04" />
+          <AlertRow icon={Clock} text="Prospect Cécile Ngono (P-2026-004) — 10 jours sans contact" sub="SPOC: Marie Atangana · Score: 71" severity="warning" time="08/04" />
+          <AlertRow icon={AlertCircle} text="Prospect Hélène Mbouda (P-2026-007) — abandonnée après 3 relances" sub="SPOC: Fabien Nkoulou · 21 jours sans réponse" severity="info" time="25/03" />
+        </div>
+      </Card>
+
+      {/* Views */}
+      {view === "liste" && (
+        <Card noPad>
+          <MiniTable columns={[
+            { key: "id", label: "Réf.", render: r => <span style={{ fontSize: 10, fontFamily: "monospace", color: C.gray }}>{r.id}</span> },
+            { key: "nom", label: "Prospect", render: r => <span style={{ fontWeight: 600, color: C.dark, fontSize: 12 }}>{r.nom}</span> },
+            { key: "type", label: "Type", render: r => <span style={{ fontSize: 11 }}>{r.type}</span> },
+            { key: "region", label: "Ville", render: r => <span style={{ fontSize: 11 }}>{r.region}</span> },
+            { key: "budget", label: "Budget", render: r => <span style={{ fontWeight: 600, fontSize: 11 }}>{r.budget}</span> },
+            { key: "statut", label: "Statut", render: r => <StatusBadge statut={r.statut} /> },
+            { key: "score", label: "Score", render: r => <ScoreBar value={r.score} showLabel /> },
+            { key: "spoc", label: "SPOC", render: r => r.spoc === "—" ? <Badge variant="danger" size="xs">Non affecté</Badge> : <span style={{ fontSize: 11 }}>{r.spoc}</span> },
+            { key: "qualiteRemplissage", label: "Qualité fiche", render: r => <ScoreBar value={r.qualiteRemplissage} showLabel /> },
+            { key: "delaiSansContact", label: "Dern. contact", render: r => (
+              <span style={{ fontSize: 11, color: r.delaiSansContact > 7 ? C.danger : r.delaiSansContact > 3 ? C.warning : C.gray, fontWeight: r.delaiSansContact > 7 ? 600 : 400 }}>
+                {r.delaiSansContact === 0 ? "Aujourd'hui" : `il y a ${r.delaiSansContact}j`}
+              </span>
+            )},
+            { key: "financement", label: "Financement" },
+            { key: "source", label: "Source", render: r => <Badge variant="dark" size="xs">{r.source}</Badge> },
+          ]} data={ADMIN_PROSPECTS} />
+        </Card>
+      )}
+
+      {view === "kanban" && (
+        <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 10 }}>
+          <KanbanColumn title="En attente" prospects={ADMIN_PROSPECTS.filter(p => p.statut === "En attente")} color={C.warning} />
+          <KanbanColumn title="En revue" prospects={ADMIN_PROSPECTS.filter(p => p.statut === "En revue")} color={C.info} />
+          <KanbanColumn title="Convertis" prospects={ADMIN_PROSPECTS.filter(p => p.statut === "Converti")} color={C.success} />
+          <KanbanColumn title="Abandonnés" prospects={ADMIN_PROSPECTS.filter(p => p.statut === "Abandonné")} color={C.danger} />
+        </div>
+      )}
+
+      {view === "stats" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <Card title="Répartition par source">
+            {[
+              { source: "Site web", count: 3, pct: 43 },
+              { source: "Recommandation", count: 1, pct: 14 },
+              { source: "Événement diaspora", count: 1, pct: 14 },
+              { source: "Réseaux sociaux", count: 1, pct: 14 },
+              { source: "Partenaire Connect", count: 1, pct: 14 },
+            ].map((s, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                <span style={{ fontSize: 12, color: C.dark, flex: 1 }}>{s.source}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.dark }}>{s.count}</span>
+                <div style={{ width: 80 }}><ScoreBar value={s.pct} /></div>
+              </div>
+            ))}
+          </Card>
+          <Card title="Performance par SPOC">
+            {[
+              { spoc: "Marie Atangana", leads: 4, conversion: "25%", cycleMoyen: "14j", qualite: 92 },
+              { spoc: "Fabien Nkoulou", leads: 2, conversion: "0%", cycleMoyen: "—", qualite: 68 },
+              { spoc: "Non affecté", leads: 1, conversion: "—", cycleMoyen: "—", qualite: 45 },
+            ].map((s, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                <Avatar name={s.spoc} role="SPOC" size={28} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.dark }}>{s.spoc}</div>
+                  <div style={{ fontSize: 10, color: C.gray }}>{s.leads} leads · Conv: {s.conversion} · Cycle: {s.cycleMoyen}</div>
+                </div>
+                <ScoreBar value={s.qualite} showLabel />
+              </div>
+            ))}
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 4. PROJETS — Pilotage portefeuille
+// ═══════════════════════════════════════════════════════════════
+
+const AdminProjectsPage = () => {
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const ProjectDetail = ({ project: p }) => (
+    <div style={{ position: "fixed", top: 0, right: 0, width: 520, height: "100vh", background: "#fff", borderLeft: `1px solid ${C.border}`, zIndex: 100, overflowY: "auto", boxShadow: "-4px 0 20px rgba(0,0,0,0.08)" }}>
+      <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: C.bg }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: C.dark }}>Synthèse Projet</span>
+        <button onClick={() => setSelectedProject(null)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={18} color={C.gray} /></button>
+      </div>
+      <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: C.dark }}>{p.nom}</div>
+          <div style={{ fontSize: 12, color: C.gray, marginTop: 2 }}>{p.id} · {p.type} · {p.ville}</div>
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            <StatusBadge statut={p.phase} />
+            <StatusBadge statut={p.sante} />
+            <Badge variant={p.risque === "Faible" ? "success" : p.risque === "Moyen" ? "warning" : "danger"} size="xs">Risque: {p.risque}</Badge>
+          </div>
+        </div>
+
+        {/* Acteurs */}
+        <div style={{ background: C.bg, borderRadius: 10, padding: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.dark, marginBottom: 8 }}>Acteurs</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              { role: "Client", name: p.client },
+              { role: "SPOC", name: p.spoc },
+              { role: "AMOA", name: p.amoa },
+              { role: "MOEX", name: p.moex },
+            ].map((a, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Avatar name={a.name} role={a.role} size={24} />
+                <div>
+                  <div style={{ fontSize: 10, color: C.gray }}>{a.role}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: C.dark }}>{a.name}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Budget & Avancement */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ background: C.bg, borderRadius: 10, padding: 14, textAlign: "center" }}>
+            <div style={{ fontSize: 10, color: C.gray }}>Budget</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: C.dark, marginTop: 4 }}>{(p.budget / 1000000).toFixed(0)}M</div>
+            <div style={{ fontSize: 10, color: C.gray }}>Dépensé: {(p.depense / 1000000).toFixed(1)}M ({Math.round(p.depense / p.budget * 100)}%)</div>
+            <ScoreBar value={p.depense / p.budget * 100} height={5} />
+          </div>
+          <div style={{ background: C.bg, borderRadius: 10, padding: 14, textAlign: "center" }}>
+            <div style={{ fontSize: 10, color: C.gray }}>Avancement</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: C.dark, marginTop: 4 }}>{p.avancement}%</div>
+            <ScoreBar value={p.avancement} height={5} />
+            <div style={{ fontSize: 10, color: C.gray, marginTop: 4 }}>Prochain : {p.prochainJalon}</div>
+          </div>
+        </div>
+
+        {/* Validations */}
+        {p.validationsEnAttente > 0 && (
+          <div style={{ background: C.warningLight, borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.warningDark }}>
+              <Clock size={12} style={{ marginRight: 4 }} />{p.validationsEnAttente} validation{p.validationsEnAttente > 1 ? "s" : ""} en attente
+            </div>
+          </div>
+        )}
+
+        {/* Alertes */}
+        {p.alertes > 0 && (
+          <div style={{ background: C.dangerLight, borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.dangerDark }}>
+              <AlertTriangle size={12} style={{ marginRight: 4 }} />{p.alertes} alerte{p.alertes > 1 ? "s" : ""} active{p.alertes > 1 ? "s" : ""}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>Portefeuille Projets</h2>
+          <p style={{ fontSize: 12, color: C.gray, margin: "3px 0 0" }}>Vision consolidée des projets actifs et en préparation</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Btn icon={Filter} variant="secondary">Filtres</Btn>
+          <Btn icon={Download} variant="secondary">Export</Btn>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+        <KPICard icon={Building2} label="Projets actifs" value="3" color={C.primary} />
+        <KPICard icon={DollarSign} label="Budget total" value="230M" sub="FCFA" color={C.success} />
+        <KPICard icon={DollarSign} label="Dépensé total" value="54.9M" sub="FCFA (24%)" color={C.warning} />
+        <KPICard icon={AlertTriangle} label="Alertes projet" value="3" color={C.danger} accent={C.danger} />
+        <KPICard icon={Clock} label="Valid. en attente" value="4" color={C.info} />
+      </div>
+
+      {/* Phase distribution */}
+      <Card title="Répartition par phase">
+        <div style={{ display: "flex", gap: 10 }}>
+          {[
+            { phase: "Pré-faisabilité", count: 1, color: C.lightGray },
+            { phase: "Devis", count: 1, color: C.info },
+            { phase: "Exécution", count: 1, color: C.success },
+            { phase: "Clos", count: 0, color: C.dark },
+          ].map((p, i) => (
+            <div key={i} style={{ flex: 1, textAlign: "center", padding: 12, borderRadius: 8, background: `${p.color}08`, border: `1px solid ${p.color}20` }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: p.color }}>{p.count}</div>
+              <div style={{ fontSize: 11, color: C.gray, marginTop: 2 }}>{p.phase}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Project Cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {ADMIN_PROJECTS.map((p, i) => (
+          <div key={i} onClick={() => setSelectedProject(p)} style={{
+            background: "#fff", borderRadius: 12, padding: 18, border: `1px solid ${C.border}`,
+            borderLeft: `4px solid ${p.sante === "Bon" ? C.success : p.sante === "Attention" ? C.warning : C.lightGray}`,
+            cursor: "pointer", transition: "box-shadow 0.15s",
+          }} onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)"}
+             onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 10, fontFamily: "monospace", color: C.gray }}>{p.id}</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: C.dark }}>{p.nom}</span>
+                </div>
+                <div style={{ fontSize: 11, color: C.gray, marginTop: 4 }}>
+                  {p.client} · {p.type} · {p.ville} · SPOC: {p.spoc}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <StatusBadge statut={p.phase} />
+                <StatusBadge statut={p.sante} />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 14, marginTop: 14 }}>
+              <div>
+                <div style={{ fontSize: 10, color: C.gray }}>Avancement</div>
+                <div style={{ marginTop: 4 }}><ScoreBar value={p.avancement} showLabel /></div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: C.gray }}>Budget</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.dark, marginTop: 2 }}>{(p.budget / 1000000).toFixed(0)}M</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: C.gray }}>Dépensé</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: p.depense / p.budget > 0.5 ? C.warning : C.dark, marginTop: 2 }}>{(p.depense / 1000000).toFixed(1)}M ({Math.round(p.depense / p.budget * 100)}%)</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: C.gray }}>Prochain jalon</div>
+                <div style={{ fontSize: 11, color: C.dark, marginTop: 2, fontWeight: 500 }}>{p.prochainJalon}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: C.gray }}>Alertes / Valid.</div>
+                <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
+                  {p.alertes > 0 && <Badge variant="danger" size="xs">{p.alertes} alerte{p.alertes > 1 ? "s" : ""}</Badge>}
+                  {p.validationsEnAttente > 0 && <Badge variant="warning" size="xs">{p.validationsEnAttente} valid.</Badge>}
+                  {p.alertes === 0 && p.validationsEnAttente === 0 && <span style={{ color: C.lightGray, fontSize: 11 }}>RAS</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {selectedProject && <ProjectDetail project={selectedProject} />}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 5. PARAMÉTRAGE — Centre de configuration structuré
+// ═══════════════════════════════════════════════════════════════
+
+const AdminParametragePage = () => {
+  const [activeSection, setActiveSection] = useState("referentiels");
+
+  const sections = [
+    { key: "referentiels", label: "Référentiels métier", icon: Database, items: [
+      { title: "Articles & Matériaux", desc: "Base centralisée des articles chantier", count: "156 articles", color: C.primary },
+      { title: "Lots standards", desc: "Templates de lots par type de projet", count: "9 lots", color: C.primary },
+      { title: "Typologies projet", desc: "Villa, Duplex, Immeuble, Rénovation, etc.", count: "6 types", color: C.primary },
+      { title: "Niveaux de finition", desc: "Base, Gamme moyenne, Haut de gamme", count: "3 niveaux", color: C.primary },
+      { title: "Main d'œuvre", desc: "Corps de métier, niveaux, coûts journaliers", count: "18 postes", color: C.primary },
+      { title: "Fournisseurs", desc: "Fournisseurs référencés et KPI associés", count: "23 fournisseurs", color: C.primary },
+    ]},
+    { key: "crm", label: "Paramétrage CRM", icon: Users, items: [
+      { title: "Formulaire prospect", desc: "Champs, règles conditionnelles, mapping Odoo", count: "12 champs", color: C.info },
+      { title: "Scoring prospects", desc: "Règles de scoring automatique par critères", count: "8 règles", color: C.info },
+      { title: "Statuts pipeline", desc: "Étapes du pipeline commercial", count: "5 statuts", color: C.info },
+      { title: "Règles d'affectation SPOC", desc: "Attribution automatique par zone/type", count: "4 règles", color: C.info },
+    ]},
+    { key: "projets", label: "Paramétrage projets", icon: Building2, items: [
+      { title: "Templates planning", desc: "Modèles par type de construction", count: "4 modèles", color: C.secondary },
+      { title: "Jalons standards", desc: "Jalons obligatoires par phase", count: "12 jalons", color: C.secondary },
+      { title: "Phases projet", desc: "Pré-faisabilité → Exécution → Clos", count: "5 phases", color: C.secondary },
+      { title: "Règles de passage", desc: "Conditions pour avancer entre phases", count: "8 règles", color: C.secondary },
+      { title: "Règles de validation", desc: "Circuits d'approbation par type d'action", count: "15 circuits", color: C.secondary },
+    ]},
+    { key: "meteo", label: "Météo chantier", icon: CloudSun, items: [
+      { title: "Seuils par tâche", desc: "Conditions météo limitant l'exécution", count: "4 seuils", color: C.warning },
+      { title: "Couleurs d'alerte", desc: "Jaune, Orange, Rouge par type de risque", count: "3 niveaux", color: C.warning },
+      { title: "Impact chantier", desc: "Règles d'arrêt / reprise automatiques", count: "6 scénarios", color: C.warning },
+    ]},
+    { key: "video", label: "Vidéosurveillance", icon: Camera, items: [
+      { title: "Caméras RTSP", desc: "Configuration flux vidéo par chantier", count: "4 caméras", color: C.purple },
+      { title: "Zones surveillées", desc: "Délimitation et nommage des zones", count: "6 zones", color: C.purple },
+      { title: "Plages horaires", desc: "Heures d'enregistrement et détection", count: "2 plages", color: C.purple },
+      { title: "Alertes activité", desc: "Détection mouvement hors heures", count: "3 règles", color: C.purple },
+    ]},
+    { key: "workflows", label: "Workflows & Notifications", icon: Send, items: [
+      { title: "Circuits de validation", desc: "Qui valide quoi, par rôle et module", count: "18 workflows", color: C.primary },
+      { title: "Escalades", desc: "Délais et destinataires de relance", count: "6 règles", color: C.primary },
+      { title: "Canaux de notification", desc: "Email, SMS, Push, In-app", count: "4 canaux", color: C.primary },
+      { title: "SLA & Rappels", desc: "Délais maximum par type d'action", count: "12 SLA", color: C.primary },
+    ]},
+    { key: "securite", label: "Sécurité & Accès", icon: Shield, items: [
+      { title: "Rôles", desc: "Admin, SPOC, AMOA, MOE, MOEX, Client", count: "6 rôles", color: C.danger },
+      { title: "Permissions", desc: "Matrice de droits par rôle et module", count: "72 permissions", color: C.danger },
+      { title: "Habilitations sensibles", desc: "Actions nécessitant validation admin", count: "8 actions", color: C.danger },
+      { title: "Restrictions par module", desc: "Accès conditionnel selon qualification", count: "Actif", color: C.danger },
+    ]},
+    { key: "onboarding", label: "Onboarding & Qualification", icon: GraduationCap, items: [
+      { title: "Parcours par rôle", desc: "Étapes d'onboarding adaptées à chaque rôle", count: "6 parcours", color: C.success },
+      { title: "Modules obligatoires", desc: "Formations requises avant habilitation", count: "12 modules", color: C.success },
+      { title: "Quiz & Checklists", desc: "Validations de prise en main", count: "8 quiz", color: C.success },
+      { title: "Niveaux de qualification", desc: "Découverte → Référent", count: "5 niveaux", color: C.success },
+      { title: "Règles de montée", desc: "Conditions d'évolution entre niveaux", count: "10 règles", color: C.success },
+      { title: "Seuils d'alerte usage", desc: "Détection d'usage insuffisant par module", count: "Actif", color: C.success },
+    ]},
+    { key: "systeme", label: "Système & Intégrations", icon: Zap, items: [
+      { title: "Intégrations API", desc: "Odoo, Connect (paiement), Firebase, SMTP", count: "4 intégrations", color: C.darkGray },
+      { title: "Jours ouvrés & Fériés", desc: "Calendrier configurable par pays/projet", count: "Cameroun", color: C.darkGray },
+      { title: "Devises & Taux", desc: "FCFA, EUR, conversions automatiques", count: "2 devises", color: C.darkGray },
+    ]},
+  ];
+
+  const activeItems = sections.find(s => s.key === activeSection)?.items || [];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>Centre de Paramétrage</h2>
+        <p style={{ fontSize: 12, color: C.gray, margin: "3px 0 0" }}>Configuration et référentiels structurants de la plateforme</p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 16 }}>
+        {/* Sidebar */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {sections.map(s => (
+            <button key={s.key} onClick={() => setActiveSection(s.key)} style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8,
+              background: activeSection === s.key ? C.primaryLight : "transparent",
+              color: activeSection === s.key ? C.primaryDark : C.gray,
+              border: "none", cursor: "pointer", fontSize: 12, fontWeight: activeSection === s.key ? 700 : 500,
+              textAlign: "left", width: "100%",
+            }}>
+              <s.icon size={16} />
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {activeItems.map((item, i) => (
+            <div key={i} style={{
+              background: "#fff", borderRadius: 10, padding: 16, border: `1px solid ${C.border}`,
+              cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "box-shadow 0.15s",
+            }} onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)"}
+               onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}>
+              <div style={{ width: 38, height: 38, borderRadius: 9, background: `${item.color}10`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Settings size={16} color={item.color} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.dark }}>{item.title}</div>
+                <div style={{ fontSize: 11, color: C.gray, marginTop: 2 }}>{item.desc}</div>
+                <div style={{ fontSize: 10, color: C.lightGray, marginTop: 4 }}>{item.count}</div>
+              </div>
+              <ChevronRight size={14} color={C.lightGray} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 6. AUDIT & LOGS — Centre de contrôle et conformité
+// ═══════════════════════════════════════════════════════════════
+
+const AdminAuditPage = () => {
+  const [filterRole, setFilterRole] = useState("Tous");
+  const [filterCriticite, setFilterCriticite] = useState("Toutes");
+
+  const filtered = useMemo(() => {
+    let data = AUDIT_LOGS;
+    if (filterRole !== "Tous") data = data.filter(l => l.role === filterRole);
+    if (filterCriticite !== "Toutes") data = data.filter(l => l.criticite === filterCriticite);
+    return data;
+  }, [filterRole, filterCriticite]);
+
+  const anomalies = [
+    { text: "Compte inactif avec droits élevés : Ex. Ateba (MOE)", sub: "3 incidents passés · Dernière connexion: 02/01/2026", severity: "critical" },
+    { text: "Caméra CAM-004 déconnectée depuis > 24h", sub: "Zone arrière chantier PRJ-001 non couverte", severity: "critical" },
+    { text: "Arc. Njoya — accès GED + Planning non maîtrisé malgré habilitation", sub: "Score adoption 45% — Onboarding incomplet", severity: "warning" },
+    { text: "Modification devis PRJ-001 par AMOA sans validation SPOC préalable", sub: "Action le 16/04 à 10:20 — Workflow non respecté", severity: "warning" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>Audit, Conformité & Logs</h2>
+          <p style={{ fontSize: 12, color: C.gray, margin: "3px 0 0" }}>Traçabilité, anomalies et contrôle de conformité</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Btn icon={Download} variant="secondary">Export CSV</Btn>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+        <KPICard icon={Activity} label="Actions (7j)" value="87" color={C.primary} />
+        <KPICard icon={ShieldAlert} label="Actions critiques" value="4" sub="Modifications droits, suppressions" color={C.danger} accent={C.danger} />
+        <KPICard icon={RefreshCw} label="Alertes système" value="6" sub="Météo, stock, caméras" color={C.warning} />
+        <KPICard icon={CheckCircle2} label="Validations sensibles" value="12" color={C.success} />
+        <KPICard icon={XCircle} label="Erreurs / Échecs" value="1" sub="Flux RTSP interrompu" color={C.danger} />
+      </div>
+
+      {/* Anomalies */}
+      <Card title="Anomalies détectées" action={<Badge variant="danger" size="xs">{anomalies.length}</Badge>}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {anomalies.map((a, i) => (
+            <AlertRow key={i} icon={a.severity === "critical" ? ShieldAlert : AlertTriangle} text={a.text} sub={a.sub} severity={a.severity} />
+          ))}
+        </div>
+      </Card>
+
+      {/* Filters */}
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: C.gray }}>Filtres :</span>
+        <select value={filterRole} onChange={e => setFilterRole(e.target.value)} style={{ padding: "5px 10px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, color: C.darkGray, background: "#fff" }}>
+          {["Tous", "SPOC", "AMOA", "MOEX", "MOE", "Admin", "Auto"].map(r => <option key={r}>{r}</option>)}
+        </select>
+        <select value={filterCriticite} onChange={e => setFilterCriticite(e.target.value)} style={{ padding: "5px 10px", borderRadius: 6, border: `1px solid ${C.border}`, fontSize: 12, color: C.darkGray, background: "#fff" }}>
+          {["Toutes", "Critique", "Haute", "Normale", "Info"].map(c => <option key={c}>{c}</option>)}
+        </select>
+        <span style={{ fontSize: 11, color: C.lightGray }}>{filtered.length} résultats</span>
+      </div>
+
+      {/* Log table */}
+      <Card noPad>
+        <MiniTable columns={[
+          { key: "date", label: "Date/Heure", render: r => <span style={{ fontFamily: "monospace", fontSize: 10, color: C.gray }}>{r.date}</span> },
+          { key: "user", label: "Utilisateur", render: r => (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Avatar name={r.user} role={r.role} size={22} />
+              <span style={{ fontWeight: 600, fontSize: 11 }}>{r.user}</span>
+            </div>
+          )},
+          { key: "role", label: "Rôle", render: r => <RoleBadge role={r.role} /> },
+          { key: "action", label: "Action", render: r => {
+            const v = { "Création": "success", "Validation": "active", "Modification": "info", "Alerte": "warning", "Suppression": "danger", "Modification droits": "danger", "Envoi facture": "info", "Modification devis": "warning", "Alerte météo": "warning", "Alerte caméra": "danger", "Relance": "warning", "Connexion": "dark" };
+            return <Badge variant={v[r.action] || "dark"} size="xs">{r.action}</Badge>;
+          }},
+          { key: "cible", label: "Objet / Cible", render: r => <span style={{ fontSize: 11, color: C.gray, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{r.cible}</span> },
+          { key: "module", label: "Module", render: r => <Badge variant="dark" size="xs">{r.module}</Badge> },
+          { key: "criticite", label: "Criticité", render: r => {
+            const v = { "Critique": "critical", "Haute": "danger", "Normale": "dark", "Info": "info" };
+            return <Badge variant={v[r.criticite] || "dark"} size="xs">{r.criticite}</Badge>;
+          }},
+          { key: "resultat", label: "Résultat", render: r => (
+            <span style={{ fontSize: 11, color: r.resultat === "OK" || r.resultat === "Approuvé" ? C.success : r.resultat.includes("Alerte") ? C.danger : C.gray }}>
+              {r.resultat}
+            </span>
+          )},
+        ]} data={filtered} />
+      </Card>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 7. KPI GLOBAL — Tableau de bord stratégique
+// ═══════════════════════════════════════════════════════════════
+
+const AdminKPIPage = () => {
+  const [activeSection, setActiveSection] = useState("commercial");
+
+  const sections = [
+    { key: "commercial", label: "Performance commerciale", icon: TrendingUp },
+    { key: "projets", label: "Performance projets", icon: Building2 },
+    { key: "exploitation", label: "Performance exploitation", icon: Activity },
+    { key: "adoption", label: "Adoption plateforme", icon: Users },
+    { key: "partenaires", label: "Performance partenaires", icon: Briefcase },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.dark, margin: 0 }}>KPI Global — Pilotage stratégique</h2>
+        <p style={{ fontSize: 12, color: C.gray, margin: "3px 0 0" }}>Indicateurs de performance consolidés de la plateforme</p>
+      </div>
+
+      {/* Section tabs */}
+      <div style={{ display: "flex", gap: 8 }}>
+        {sections.map(s => (
+          <button key={s.key} onClick={() => setActiveSection(s.key)} style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8,
+            background: activeSection === s.key ? C.primary : "#fff",
+            color: activeSection === s.key ? "#fff" : C.gray,
+            border: `1px solid ${activeSection === s.key ? C.primary : C.border}`,
+            cursor: "pointer", fontSize: 12, fontWeight: 600,
+          }}>
+            <s.icon size={14} />{s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Commercial */}
+      {activeSection === "commercial" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+            <KPICard icon={Target} label="Taux conversion" value="14%" sub="1/7 ce mois" color={C.warning} trend={-5} />
+            <KPICard icon={Clock} label="Cycle moyen" value="18j" sub="Formulaire → Conversion" color={C.info} />
+            <KPICard icon={DollarSign} label="Pipeline actif" value="578M" sub="FCFA" color={C.success} trend={12} />
+            <KPICard icon={Users} label="Leads par source" value="3" sub="Site web en tête" color={C.primary} />
+            <KPICard icon={Percent} label="Transf. par type" value="100%" sub="Construction neuve" color={C.success} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Card title="Conversion par typologie projet">
+              {[
+                { type: "Construction neuve", leads: 3, convertis: 1, taux: "33%" },
+                { type: "Rénovation", leads: 2, convertis: 0, taux: "0%" },
+                { type: "Reprise chantier", leads: 1, convertis: 0, taux: "0%" },
+                { type: "Ameublement", leads: 1, convertis: 0, taux: "0%" },
+              ].map((t, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                  <span style={{ fontSize: 12, color: C.dark, flex: 1 }}>{t.type}</span>
+                  <span style={{ fontSize: 11, color: C.gray }}>{t.leads} leads</span>
+                  <span style={{ fontSize: 11, color: C.gray }}>{t.convertis} conv.</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: parseInt(t.taux) > 0 ? C.success : C.lightGray }}>{t.taux}</span>
+                </div>
+              ))}
+            </Card>
+            <Card title="Évolution mensuelle pipeline">
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 120 }}>
+                {[
+                  { mois: "Jan", value: 120, leads: 2 },
+                  { mois: "Fév", value: 185, leads: 3 },
+                  { mois: "Mar", value: 310, leads: 5 },
+                  { mois: "Avr", value: 578, leads: 7 },
+                ].map((m, i) => (
+                  <div key={i} style={{ flex: 1, textAlign: "center" }}>
+                    <div style={{ height: `${(m.value / 578) * 100}%`, background: `linear-gradient(180deg, ${C.primary} 0%, ${C.secondary} 100%)`, borderRadius: "4px 4px 0 0", minHeight: 10, transition: "height 0.5s" }} />
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.dark, marginTop: 4 }}>{m.value}M</div>
+                    <div style={{ fontSize: 10, color: C.gray }}>{m.mois}</div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </>
+      )}
+
+      {/* Projets */}
+      {activeSection === "projets" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+            <KPICard icon={BarChart3} label="Avancement moyen" value="17%" color={C.primary} />
+            <KPICard icon={AlertTriangle} label="Projets en retard" value="0" color={C.success} />
+            <KPICard icon={DollarSign} label="Écart budget" value="+2%" sub="Dans les limites" color={C.success} />
+            <KPICard icon={Layers} label="Lots actifs" value="3" sub="Sur 9 au total" color={C.info} />
+            <KPICard icon={Clock} label="Valid. en attente" value="4" color={C.warning} />
+          </div>
+          <Card title="Avancement par projet">
+            {ADMIN_PROJECTS.map((p, i) => (
+              <div key={i} style={{ padding: "12px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.dark }}>{p.nom}</span>
+                  <StatusBadge statut={p.phase} />
+                </div>
+                <ScoreBar value={p.avancement} showLabel height={8} />
+                <div style={{ display: "flex", gap: 16, marginTop: 6 }}>
+                  <span style={{ fontSize: 10, color: C.gray }}>Budget: {(p.budget / 1000000).toFixed(0)}M</span>
+                  <span style={{ fontSize: 10, color: C.gray }}>Dépensé: {(p.depense / 1000000).toFixed(1)}M</span>
+                  <span style={{ fontSize: 10, color: p.sante === "Bon" ? C.success : C.warning }}>Santé: {p.sante}</span>
+                </div>
+              </div>
+            ))}
+          </Card>
+        </>
+      )}
+
+      {/* Exploitation */}
+      {activeSection === "exploitation" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+            <KPICard icon={FileCheck} label="Rapports < 24h" value="94%" color={C.success} trend={3} />
+            <KPICard icon={CheckCircle2} label="Valid. dans délai" value="89%" color={C.success} />
+            <KPICard icon={FolderOpen} label="Complétude docs" value="82%" color={C.primary} />
+            <KPICard icon={Package} label="Incidents stock" value="2" color={C.warning} />
+            <KPICard icon={CloudSun} label="Alertes météo (mois)" value="3" color={C.info} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Card title="Conformité opérationnelle">
+              {[
+                { label: "Rapports journaliers soumis < 24h", value: 94, target: 100 },
+                { label: "Validations AMOA < 48h", value: 89, target: 95 },
+                { label: "Demandes d'achat traitées < 72h", value: 75, target: 90 },
+                { label: "Documents versés dans la GED", value: 82, target: 100 },
+                { label: "Factures envoyées dans les délais", value: 100, target: 100 },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                  <span style={{ fontSize: 12, color: C.dark, flex: 1 }}>{item.label}</span>
+                  <ScoreBar value={item.value} showLabel />
+                  <span style={{ fontSize: 10, color: C.lightGray, minWidth: 40 }}>Obj: {item.target}%</span>
+                </div>
+              ))}
+            </Card>
+            <Card title="Incidents récents">
+              <AlertRow icon={Package} text="Stock critique câble 2.5mm² — risque arrêt Lot VII" sub="PRJ-001 · Détecté le 18/04" severity="warning" />
+              <AlertRow icon={Camera} text="Flux RTSP CAM-004 interrompu" sub="PRJ-001 · Depuis le 16/04 à 10:00" severity="critical" />
+              <AlertRow icon={CloudSun} text="Arrêt partiel chantier le 13/04 — pluie forte" sub="PRJ-001 · Reprise à 14h · 8 ouvriers présents" severity="info" />
+            </Card>
+          </div>
+        </>
+      )}
+
+      {/* Adoption */}
+      {activeSection === "adoption" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+            <KPICard icon={Users} label="Connexions (7j)" value="42" color={C.primary} trend={8} />
+            <KPICard icon={Gauge} label="Score adoption moyen" value="59%" color={C.warning} />
+            <KPICard icon={GraduationCap} label="Onboarding terminé" value="4/10" sub="40%" color={C.info} />
+            <KPICard icon={UserX} label="À renforcer" value="4" color={C.danger} accent={C.danger} />
+            <KPICard icon={Award} label="Référents" value="1" sub="S. Kamga (AMOA)" color={C.success} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Card title="Adoption par rôle">
+              {[
+                { role: "SPOC", count: 2, scoreMoyen: 86, icon: Users },
+                { role: "AMOA", count: 2, scoreMoyen: 76, icon: Briefcase },
+                { role: "MOE", count: 1, scoreMoyen: 45, icon: Ruler },
+                { role: "MOEX", count: 1, scoreMoyen: 82, icon: HardHat },
+                { role: "Client", count: 3, scoreMoyen: 43, icon: Home },
+              ].map((r, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                  <RoleBadge role={r.role} />
+                  <span style={{ fontSize: 12, color: C.gray, flex: 1 }}>{r.count} utilisateur{r.count > 1 ? "s" : ""}</span>
+                  <ScoreBar value={r.scoreMoyen} showLabel />
+                </div>
+              ))}
+            </Card>
+            <Card title="Usage par module (7j)">
+              {[
+                { module: "CRM / Prospects", actions: 18, users: 3 },
+                { module: "Rapports chantier", actions: 15, users: 3 },
+                { module: "Tâches", actions: 12, users: 3 },
+                { module: "GED", actions: 8, users: 4 },
+                { module: "Devis & Planning", actions: 6, users: 2 },
+                { module: "Stock", actions: 5, users: 2 },
+                { module: "Achats", actions: 4, users: 2 },
+                { module: "Messagerie", actions: 3, users: 5 },
+                { module: "Facturation", actions: 2, users: 1 },
+              ].map((m, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                  <span style={{ fontSize: 12, color: C.dark, flex: 1 }}>{m.module}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: C.primary }}>{m.actions} actions</span>
+                  <span style={{ fontSize: 10, color: C.lightGray }}>{m.users} users</span>
+                </div>
+              ))}
+            </Card>
+          </div>
+        </>
+      )}
+
+      {/* Partenaires */}
+      {activeSection === "partenaires" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+            <KPICard icon={Briefcase} label="Partenaires actifs" value="3" sub="1 AMOA + 1 MOE + 1 MOEX" color={C.primary} />
+            <KPICard icon={Clock} label="Respect délais" value="88%" color={C.success} />
+            <KPICard icon={Star} label="Qualité livrables" value="4.2/5" color={C.warning} />
+            <KPICard icon={AlertTriangle} label="Incidents partenaires" value="3" color={C.danger} />
+          </div>
+          <Card title="Évaluation partenaires">
+            <MiniTable columns={[
+              { key: "nom", label: "Partenaire", render: r => (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Avatar name={r.nom} role={r.role} size={28} />
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 12, color: C.dark }}>{r.nom}</div>
+                    <div style={{ fontSize: 10, color: C.gray }}>{r.entite}</div>
+                  </div>
+                </div>
+              )},
+              { key: "role", label: "Rôle", render: r => <RoleBadge role={r.role} /> },
+              { key: "projets", label: "Projets", render: r => <span style={{ fontWeight: 600 }}>{r.projets}</span> },
+              { key: "respectDelais", label: "Respect délais", render: r => <ScoreBar value={r.respectDelais} showLabel /> },
+              { key: "qualite", label: "Qualité", render: r => (
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <Star size={12} color={C.warning} fill={C.warning} />
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>{r.qualite}</span>
+                </div>
+              )},
+              { key: "incidents", label: "Incidents", render: r => r.incidents > 0 ? <Badge variant="danger" size="xs">{r.incidents}</Badge> : <span style={{ color: C.lightGray }}>0</span> },
+            ]} data={[
+              { nom: "S. Kamga", entite: "WeCare SCI", role: "AMOA", projets: 2, respectDelais: 95, qualite: "4.8", incidents: 0 },
+              { nom: "Arc. Njoya", entite: "Archi Studio", role: "MOE", projets: 1, respectDelais: 72, qualite: "3.5", incidents: 0 },
+              { nom: "B. Ekambi", entite: "BTP Cameroun SARL", role: "MOEX", projets: 1, respectDelais: 85, qualite: "4.2", incidents: 2 },
+            ]} />
+          </Card>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SIDEBAR & TOPBAR
+// ═══════════════════════════════════════════════════════════════
+
 const NAV_ITEMS = [
-  { k:"cockpit", l:"Cockpit AMOA", i:Gauge },
-  { k:"projets", l:"Mes Projets", i:Layers },
-  { k:"etudes", l:"Études & Livrables", i:FileText },
-  { k:"validations", l:"Validations", i:ClipboardCheck },
-  { k:"ecarts", l:"Écarts & Réserves", i:Shield },
-  { k:"rapports", l:"Rapports", i:FileCheck },
-  { k:"ged", l:"GED", i:FolderOpen },
-  { k:"video", l:"Vidéosurveillance", i:Video },
-  { k:"msg", l:"Messagerie", i:MessageSquare },
-  { k:"kpi", l:"KPI & Analytics", i:BarChart3 },
-  { k:"ia", l:"IA KOMA", i:Brain },
+  { key: "dashboard", label: "Vue Globale", icon: LayoutDashboard },
+  { key: "users", label: "Utilisateurs", icon: Users },
+  { key: "prospects", label: "Prospects / CRM", icon: Target },
+  { key: "projets", label: "Projets", icon: Building2 },
+  { key: "parametrage", label: "Paramétrage", icon: Settings },
+  { key: "audit", label: "Audit & Logs", icon: Shield },
+  { key: "kpi", label: "KPI Global", icon: BarChart3 },
 ];
 
-function Sidebar({ nav, onNav, collapsed }) {
-  const counts = {
-    validations: VALIDATIONS.filter(v=>v.statut==="En attente").length,
-    ecarts: ECARTS.filter(e=>e.statut==="Ouvert"||e.statut==="En traitement").length,
-    rapports: RAPPORTS.filter(r=>r.statut==="À valider").length,
-    msg: MESSAGES.filter(m=>m.attente).length,
-  };
-
-  return <div style={{ width:collapsed?56:230, minHeight:"100vh", background:C.dk, color:"#fff", display:"flex", flexDirection:"column", transition:"width 0.2s", overflow:"hidden", flexShrink:0 }}>
-    <div style={{ padding:collapsed?"14px 10px":"14px", display:"flex", alignItems:"center", gap:8, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-      <div style={{ width:32, height:32, borderRadius:"50%", background:C.sec, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:800, flexShrink:0 }}>K</div>
-      {!collapsed && <div><div style={{ fontSize:12, fontWeight:700 }}>KOMA Expertise</div><div style={{ fontSize:8, color:C.sec, textTransform:"uppercase", letterSpacing:1.5 }}>Portail AMOA</div></div>}
+const Sidebar = ({ activeNav, onNav, collapsed }) => (
+  <div style={{
+    width: collapsed ? 64 : 240, minHeight: "100vh",
+    background: C.dark, color: "#fff",
+    display: "flex", flexDirection: "column",
+    transition: "width 0.2s ease", overflow: "hidden", flexShrink: 0,
+  }}>
+    {/* Logo */}
+    <div style={{ padding: collapsed ? "20px 12px" : "20px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+      <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.secondary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", flexShrink: 0 }}>K</div>
+      {!collapsed && <div>
+        <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 0.5 }}>KOMA Expertise</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", letterSpacing: 0.8, textTransform: "uppercase" }}>Administration</div>
+      </div>}
     </div>
-    {!collapsed && <div style={{ margin:"8px 10px 4px", padding:"6px 10px", borderRadius:6, background:C.sec+"18", display:"flex", alignItems:"center", gap:6 }}>
-      <Shield size={12} color={C.sec}/>
-      <span style={{ fontSize:10, fontWeight:700, color:C.sec }}>Conformité · Validation · Contrôle</span>
-    </div>}
-    <div style={{ flex:1, padding:"6px 6px", display:"flex", flexDirection:"column", gap:1, overflowY:"auto" }}>
-      {NAV_ITEMS.map(it => {
-        const isAct = nav===it.k;
-        const cnt = counts[it.k];
-        return <button key={it.k} onClick={()=>onNav(it.k)} style={{ display:"flex", alignItems:"center", gap:8, padding:collapsed?"8px":"7px 10px", borderRadius:6, border:"none", cursor:"pointer", background:isAct?C.sec+"18":"transparent", color:isAct?C.sec:"rgba(255,255,255,0.45)", fontSize:11, fontWeight:isAct?600:400, textAlign:"left", width:"100%", position:"relative" }}>
-          <it.i size={14} style={{ flexShrink:0 }}/>
-          {!collapsed && <span style={{ flex:1, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{it.l}</span>}
-          {!collapsed && cnt>0 && <span style={{ fontSize:8, fontWeight:700, padding:"1px 5px", borderRadius:8, background:C.err, color:"#fff" }}>{cnt}</span>}
-        </button>;
+
+    {/* Nav */}
+    <div style={{ flex: 1, padding: "12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+      {NAV_ITEMS.map(item => {
+        const active = activeNav === item.key;
+        return (
+          <button key={item.key} onClick={() => onNav(item.key)} style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: collapsed ? "10px 12px" : "9px 12px",
+            borderRadius: 8, border: "none", cursor: "pointer",
+            background: active ? "rgba(24,183,210,0.15)" : "transparent",
+            color: active ? C.primary : "rgba(255,255,255,0.55)",
+            fontSize: 13, fontWeight: active ? 600 : 400,
+            transition: "all 0.15s", textAlign: "left", width: "100%",
+          }}>
+            <item.icon size={18} style={{ flexShrink: 0 }} />
+            {!collapsed && <span>{item.label}</span>}
+          </button>
+        );
       })}
     </div>
-    {!collapsed && <div style={{ padding:"10px 14px", borderTop:"1px solid rgba(255,255,255,0.06)" }}>
-      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-        <div style={{ width:28, height:28, borderRadius:"50%", background:C.sec+"20", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:C.sec }}>SK</div>
-        <div><div style={{ fontSize:10, fontWeight:600, color:"#fff" }}>S. Kamga</div><div style={{ fontSize:8, color:C.lG }}>AMOA Senior</div></div>
-      </div>
-    </div>}
-  </div>;
-}
 
-function TopBar({ onToggle }) {
-  return <div style={{ height:48, padding:"0 18px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:"1px solid "+C.brd, background:C.w, flexShrink:0 }}>
-    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-      <button onClick={onToggle} style={{ background:"none", border:"none", cursor:"pointer", color:C.g, display:"flex" }}><Menu size={16}/></button>
-      <div style={{ display:"flex", alignItems:"center", gap:4, background:C.bgL, borderRadius:6, padding:"4px 10px", border:"1px solid "+C.brd, width:260 }}>
-        <Search size={12} color={C.lG}/><input placeholder="Rechercher projet, écart, livrable..." style={{ border:"none", background:"transparent", outline:"none", fontSize:11, color:C.dkG, width:"100%" }}/>
+    {/* User */}
+    {!collapsed && (
+      <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: C.primary }}>A</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>Admin KOMA</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Super Administrateur</div>
+        </div>
+        <LogOut size={14} color="rgba(255,255,255,0.3)" style={{ cursor: "pointer" }} />
+      </div>
+    )}
+  </div>
+);
+
+const TopBar = ({ onToggleSidebar }) => (
+  <div style={{
+    height: 56, padding: "0 24px", display: "flex", alignItems: "center",
+    justifyContent: "space-between", borderBottom: `1px solid ${C.border}`,
+    background: "#fff", flexShrink: 0,
+  }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <button onClick={onToggleSidebar} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: C.gray, display: "flex" }}>
+        <Menu size={20} />
+      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, background: C.bg, borderRadius: 8, padding: "6px 14px", border: `1px solid ${C.border}`, width: 320 }}>
+        <Search size={14} color={C.lightGray} />
+        <input placeholder="Rechercher utilisateur, projet, prospect…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 12, color: C.darkGray, width: "100%" }} />
       </div>
     </div>
-    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-      <div style={{ fontSize:10, color:C.g }}>Mer. 16 Avril 2026</div>
-      <div style={{ position:"relative" }}><Bell size={15} color={C.g} style={{ cursor:"pointer" }}/><div style={{ position:"absolute", top:-3, right:-3, width:14, height:14, borderRadius:"50%", background:C.err, color:"#fff", fontSize:7, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center" }}>6</div></div>
+    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <Badge variant="active" size="lg">Portail Admin</Badge>
+      <div style={{ position: "relative", cursor: "pointer" }}>
+        <Bell size={18} color={C.gray} />
+        <div style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: C.danger, border: "2px solid #fff" }} />
+      </div>
     </div>
-  </div>;
-}
+  </div>
+);
 
-/* ══════════════════════════════════════════════════════════════════════ */
-/* ROOT                                                                 */
-/* ══════════════════════════════════════════════════════════════════════ */
-export default function KomaAMOAPortal() {
-  const [nav, setNav] = useState("cockpit");
-  const [collapsed, setCollapsed] = useState(false);
+// ═══════════════════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════════════════
 
-  const page = () => {
-    switch(nav) {
-      case "cockpit": return <PageCockpit onNav={setNav}/>;
-      case "projets": return <PageProjets/>;
-      case "etudes": return <PageEtudes/>;
-      case "validations": return <PageValidations/>;
-      case "ecarts": return <PageEcarts/>;
-      case "rapports": return <PageRapports/>;
-      case "ged": return <PageGED/>;
-      case "video": return <PageVideo/>;
-      case "msg": return <PageMsg/>;
-      case "kpi": return <PageKPI/>;
-      case "ia": return <PageIA/>;
-      default: return <PageCockpit onNav={setNav}/>;
+export default function KomaAdminPortal() {
+  const [activeNav, setActiveNav] = useState("dashboard");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const renderPage = () => {
+    switch (activeNav) {
+      case "dashboard": return <AdminDashboard onNav={setActiveNav} />;
+      case "users": return <AdminUsersPage />;
+      case "prospects": return <AdminProspectsPage />;
+      case "projets": return <AdminProjectsPage />;
+      case "parametrage": return <AdminParametragePage />;
+      case "audit": return <AdminAuditPage />;
+      case "kpi": return <AdminKPIPage />;
+      default: return <AdminDashboard onNav={setActiveNav} />;
     }
   };
 
-  return <div style={{ display:"flex", height:"100vh", width:"100%", fontFamily:"'DM Sans','Segoe UI',system-ui,sans-serif", background:C.bgL, overflow:"hidden" }}>
-    <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-      * { box-sizing: border-box; margin: 0; }
-      ::-webkit-scrollbar { width: 4px; }
-      ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
-      button:hover { opacity: 0.88; }
-      @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    `}</style>
-    <Sidebar nav={nav} onNav={setNav} collapsed={collapsed}/>
-    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-      <TopBar onToggle={()=>setCollapsed(p=>!p)}/>
-      <div style={{ flex:1, overflow:"auto", padding:18 }}>
-        {page()}
+  return (
+    <div style={{
+      display: "flex", height: "100vh", width: "100%",
+      fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
+      background: C.bg, overflow: "hidden",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap');
+        * { box-sizing: border-box; margin: 0; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        button:hover { opacity: 0.92; }
+      `}</style>
+
+      <Sidebar activeNav={activeNav} onNav={setActiveNav} collapsed={sidebarCollapsed} />
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <TopBar onToggleSidebar={() => setSidebarCollapsed(p => !p)} />
+        <div style={{ flex: 1, overflow: "auto", padding: 22 }}>
+          {renderPage()}
+        </div>
       </div>
     </div>
-  </div>;
+  );
 }
